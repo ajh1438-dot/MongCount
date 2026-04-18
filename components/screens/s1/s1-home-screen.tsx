@@ -10,6 +10,8 @@ import { setLastUsedDuration, type DurationPreset } from "@/stores/s1-home-store
 
 type NotificationLike = { permission: NotificationPermission };
 
+const DURATION_OPTIONS: DurationPreset[] = [3, 5, 10];
+
 export interface S1HomeScreenProps {
   displayName?: string | null;
   isGuest?: boolean;
@@ -73,7 +75,7 @@ export function S1HomeScreen({
   const [guestBannerVisible, setGuestBannerVisible] = useState(isGuest);
   const [notificationBannerDismissed, setNotificationBannerDismissed] = useState(false);
   const [notificationGuideVisible, setNotificationGuideVisible] = useState(false);
-  const effectiveStartDuration = startDuration ?? 3;
+  const [selectedDuration, setSelectedDuration] = useState<DurationPreset>(startDuration ?? 3);
   const effectiveName = displayName?.trim() ? displayName : "몽님";
   const effectiveCount = Math.max(0, Math.min(completedCount, targetCount));
   const firstLaunch = effectiveCount === 0 && softStreakDays === 0;
@@ -127,7 +129,7 @@ export function S1HomeScreen({
         </Banner>
       ) : null}
 
-      <header className="space-y-3">
+      <header className="space-y-3 animate-fade-in">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.2em] text-muted">쉼일지</p>
@@ -152,7 +154,7 @@ export function S1HomeScreen({
       <div className="flex flex-1 flex-col justify-center gap-5">
         <article
           aria-label={`오늘 ${effectiveCount}회 완료, ${targetCount}회 목표`}
-          className="rounded-[28px] border bg-surface px-6 py-5 shadow-sm"
+          className="rounded-[28px] border bg-surface px-6 py-5 shadow-sm animate-fade-in-delay-1"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1.5">
@@ -166,22 +168,43 @@ export function S1HomeScreen({
           <p className="mt-3 text-sm leading-6 text-muted">{nextSlotText}</p>
         </article>
 
-        <Button
-          variant="primaryLarge"
-          fullWidth
-          aria-label="지금 쉼 시작하기"
-          className="min-h-32 rounded-[32px] text-xl"
-          onClick={() => {
-            setLastUsedDuration(effectiveStartDuration);
-            router.push(`/rest?duration=${effectiveStartDuration}`);
-          }}
-        >
-          지금 {effectiveStartDuration}분 쉬기
-        </Button>
+        <div className="animate-fade-in-delay-2 space-y-3">
+          <div className="flex items-center justify-center gap-2" role="radiogroup" aria-label="쉬는 시간 선택">
+            {DURATION_OPTIONS.map((d) => (
+              <button
+                key={d}
+                type="button"
+                role="radio"
+                aria-checked={selectedDuration === d}
+                onClick={() => setSelectedDuration(d)}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                  selectedDuration === d
+                    ? "bg-foreground text-background shadow-sm"
+                    : "bg-surface text-muted hover:text-foreground"
+                }`}
+              >
+                {d}분
+              </button>
+            ))}
+          </div>
+
+          <Button
+            variant="primaryLarge"
+            fullWidth
+            aria-label="지금 쉼 시작하기"
+            className="min-h-24 rounded-[32px] text-xl animate-float"
+            onClick={() => {
+              setLastUsedDuration(selectedDuration);
+              router.push(`/rest?duration=${selectedDuration}`);
+            }}
+          >
+            지금 {selectedDuration}분 쉬기
+          </Button>
+        </div>
       </div>
 
       {lastSession ? (
-        <p className="pb-1 text-center text-sm text-muted">
+        <p className="pb-1 text-center text-sm text-muted animate-fade-in-delay-3">
           마지막 쉼: {lastSession.relativeTime}
         </p>
       ) : null}

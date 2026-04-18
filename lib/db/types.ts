@@ -16,7 +16,7 @@ export type ResourceSlot =
   | "adhoc";
 
 export type DurationPreset = 3 | 5 | 10;
-export type ThemePreference = "system" | "light" | "dark";
+export type ThemePreference = "forest" | "light" | "dark";
 export type AuthProvider = "google" | "kakao" | "local_only";
 export type NotificationPlatform = "android_chrome" | "ios_safari" | "desktop";
 export type SubscriptionTier = "free" | "premium";

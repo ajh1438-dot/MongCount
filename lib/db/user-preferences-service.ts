@@ -56,7 +56,7 @@ export function createDefaultUserPreferences(
       ...createDefaultSlotConfig(),
       ...overrides.notification_slot_config,
     },
-    theme: overrides.theme ?? "system",
+    theme: overrides.theme ?? "forest",
     onboarding_completed: overrides.onboarding_completed ?? false,
     timezone: overrides.timezone ?? resolveDefaultTimezone(),
     updated_at: overrides.updated_at ?? new Date().toISOString(),

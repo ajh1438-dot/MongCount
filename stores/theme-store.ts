@@ -1,21 +1,11 @@
 import type { ThemePreference } from "@/lib/db/types";
 
-export type ResolvedThemeMode = "light" | "dark";
+export type ResolvedThemeMode = "forest" | "light" | "dark";
 
 export const THEME_STORAGE_KEY = "mongcount.theme";
-export const NIGHT_MODE_START_HOUR = 22;
-export const NIGHT_MODE_END_HOUR = 8;
-
-export function isNightModeHour(hour: number) {
-  return hour >= NIGHT_MODE_START_HOUR || hour < NIGHT_MODE_END_HOUR;
-}
 
 export function resolveThemeMode(
   preference: ThemePreference,
-  options: {
-    now?: Date;
-    systemPrefersDark?: boolean;
-  } = {},
 ): ResolvedThemeMode {
   if (preference === "light") {
     return "light";
@@ -25,16 +15,12 @@ export function resolveThemeMode(
     return "dark";
   }
 
-  if (options.now && isNightModeHour(options.now.getHours())) {
-    return "dark";
-  }
-
-  return options.systemPrefersDark ? "dark" : "light";
+  return "forest";
 }
 
 export function readStoredThemePreference(storage: Pick<Storage, "getItem"> | null | undefined) {
   const value = storage?.getItem(THEME_STORAGE_KEY);
-  return value === "light" || value === "dark" || value === "system" ? value : null;
+  return value === "light" || value === "dark" || value === "forest" ? value : null;
 }
 
 export function writeStoredThemePreference(
@@ -63,5 +49,5 @@ export function applyResolvedThemeMode(
   }
 
   root.dataset.theme = mode;
-  root.style.colorScheme = mode;
+  root.style.colorScheme = mode === "dark" ? "dark" : "light";
 }

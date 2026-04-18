@@ -1,36 +1,37 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f4f7f2;
+:root,
+:root[data-theme="forest"] {
+  --background: #f0f5ec;
   --foreground: #1a2e1a;
-  --surface: #ffffff;
+  --surface: #fafcf8;
   --surface-foreground: #1a2e1a;
   --muted: #6b7f6b;
-  --border: #d4ddd0;
+  --border: #d0dcc8;
   --primary: #3a7d44;
   --primary-foreground: #ffffff;
 }
 
 :root[data-theme="light"] {
-  --background: #f4f7f2;
-  --foreground: #1a2e1a;
-  --surface: #ffffff;
-  --surface-foreground: #1a2e1a;
-  --muted: #6b7f6b;
-  --border: #d4ddd0;
-  --primary: #3a7d44;
+  --background: #ffffff;
+  --foreground: #111111;
+  --surface: #fafafa;
+  --surface-foreground: #111111;
+  --muted: #78716c;
+  --border: #e7e5e4;
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
 }
 
 :root[data-theme="dark"] {
-  --background: #0d1a0d;
-  --foreground: #d4e4d0;
-  --surface: #142014;
-  --surface-foreground: #d4e4d0;
-  --muted: #7a9a78;
-  --border: #1e3220;
-  --primary: #5cb85c;
-  --primary-foreground: #0d1a0d;
+  --background: #0f0f0f;
+  --foreground: #e8e8e8;
+  --surface: #1a1a1a;
+  --surface-foreground: #e8e8e8;
+  --muted: #a8a29e;
+  --border: #2a2a2a;
+  --primary: #60a5fa;
+  --primary-foreground: #0f172a;
 }
 
 @theme inline {
@@ -46,7 +47,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-
 * {
   border-color: var(--border);
 }
@@ -55,4 +55,48 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), "Apple SD Gothic Neo", "Noto Sans KR", system-ui, -apple-system, sans-serif;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out both;
+}
+
+.animate-fade-in-delay-1 {
+  animation: fadeIn 0.5s ease-out 0.1s both;
+}
+
+.animate-fade-in-delay-2 {
+  animation: fadeIn 0.5s ease-out 0.2s both;
+}
+
+.animate-fade-in-delay-3 {
+  animation: fadeIn 0.5s ease-out 0.3s both;
 }

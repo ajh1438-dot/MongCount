@@ -13,7 +13,7 @@ export interface Database {
         Row: {
           user_id: string;
           notification_slots: Json;
-          theme: "system" | "light" | "dark";
+          theme: "forest" | "light" | "dark";
           onboarding_completed: boolean;
           timezone: string;
           updated_at: string;
@@ -21,14 +21,14 @@ export interface Database {
         Insert: {
           user_id: string;
           notification_slots?: Json;
-          theme?: "system" | "light" | "dark";
+          theme?: "forest" | "light" | "dark";
           onboarding_completed?: boolean;
           timezone?: string;
           updated_at?: string;
         };
         Update: {
           notification_slots?: Json;
-          theme?: "system" | "light" | "dark";
+          theme?: "forest" | "light" | "dark";
           onboarding_completed?: boolean;
           timezone?: string;
           updated_at?: string;

@@ -5,14 +5,13 @@ import { useMemo, useState } from "react";
 import type { ThemePreference } from "@/lib/db/types";
 import {
   applyResolvedThemeMode,
-  getSystemPrefersDark,
   readStoredThemePreference,
   resolveThemeMode,
   writeStoredThemePreference,
 } from "@/stores/theme-store";
 
 const OPTIONS: { value: ThemePreference; label: string }[] = [
-  { value: "system", label: "포레스트" },
+  { value: "forest", label: "포레스트" },
   { value: "light", label: "라이트" },
   { value: "dark", label: "다크" },
 ];
@@ -20,19 +19,12 @@ const OPTIONS: { value: ThemePreference; label: string }[] = [
 function applyThemePreference(preference: ThemePreference) {
   const root = document.documentElement;
   const storage = window.localStorage;
-  const mediaQueryFactory = window.matchMedia?.bind(window);
 
   writeStoredThemePreference(preference, storage);
-  applyResolvedThemeMode(
-    resolveThemeMode(preference, {
-      now: new Date(),
-      systemPrefersDark: getSystemPrefersDark(mediaQueryFactory),
-    }),
-    root,
-  );
+  applyResolvedThemeMode(resolveThemeMode(preference), root);
 }
 
-export function ThemeModeControls({ initialPreference = "system" }: { initialPreference?: ThemePreference }) {
+export function ThemeModeControls({ initialPreference = "forest" }: { initialPreference?: ThemePreference }) {
   const initialValue = useMemo<ThemePreference>(() => {
     if (typeof window === "undefined") {
       return initialPreference;

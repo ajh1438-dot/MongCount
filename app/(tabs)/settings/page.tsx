@@ -65,7 +65,7 @@ export default async function SettingsPage({
           </div>
         </InfoCard>
 
-        <InfoCard title="디스플레이" description="라이트·다크 모드와 22:00~08:00 자동 다크모드를 지원해요.">
+        <InfoCard title="디스플레이" description="포레스트·라이트·다크 모드를 선택할 수 있어요.">
           <div className="space-y-3">
             <ThemeModeSync />
             <ThemeModeControls />
