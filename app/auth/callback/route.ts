@@ -16,19 +16,24 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(destination);
   }
 
-  const { error } = await exchangeCodeForSession(code);
+  try {
+    const { error } = await exchangeCodeForSession(code);
 
-  if (error) {
+    if (error) {
+      destination.searchParams.set("auth_error", "exchange_failed");
+      return NextResponse.redirect(destination);
+    }
+
+    const user = await getCurrentUserProfile();
+
+    if (user) {
+      await markPendingAuthMigration(user.id);
+    }
+
+    await clearLocalOnlyUser();
+  } catch {
     destination.searchParams.set("auth_error", "exchange_failed");
-    return NextResponse.redirect(destination);
   }
 
-  const user = await getCurrentUserProfile();
-
-  if (user) {
-    await markPendingAuthMigration(user.id);
-  }
-
-  await clearLocalOnlyUser();
   return NextResponse.redirect(destination);
 }

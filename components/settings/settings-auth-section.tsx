@@ -58,12 +58,11 @@ export function SettingsAuthSection({ redirectTo }: SettingsAuthSectionProps) {
         type="button"
         variant="secondary"
         fullWidth
-        disabled={pendingProvider !== null}
-        onClick={() => handleOAuth("kakao")}
+        disabled
       >
-        <span className="flex items-center justify-center gap-2">
+        <span className="flex items-center justify-center gap-2 text-muted">
           <KakaoIcon />
-          {pendingProvider === "kakao" ? "로그인 중…" : "Kakao로 로그인"}
+          Kakao로 로그인 (준비중)
         </span>
       </Button>
     </div>

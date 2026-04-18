@@ -4,7 +4,12 @@ import { S1HomeStateScreen } from "@/components/screens/s1/s1-home-state-screen"
 import { resolveEntryUser } from "@/lib/supabase/auth.server";
 
 export default async function HomePage() {
-  const user = await resolveEntryUser();
+  let user = null;
+  try {
+    user = await resolveEntryUser();
+  } catch {
+    // auth state corrupted — treat as guest
+  }
   const isGuest = !user || user.provider === "local_only";
 
   return (

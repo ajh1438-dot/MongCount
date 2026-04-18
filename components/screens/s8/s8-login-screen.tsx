@@ -87,13 +87,12 @@ export function S8LoginScreen({ redirectTo }: S8LoginScreenProps) {
             type="button"
             variant="secondary"
             fullWidth
-            disabled={pendingProvider !== null}
-            onClick={() => handleOAuth("kakao")}
-            aria-label="카카오 계정으로 로그인"
+            disabled
+            aria-label="카카오 로그인 준비중"
           >
-            <span className="flex items-center justify-center gap-2">
+            <span className="flex items-center justify-center gap-2 text-muted">
               <KakaoIcon />
-              {pendingProvider === "kakao" ? "로그인 중…" : "Kakao로 로그인"}
+              Kakao로 로그인 (준비중)
             </span>
           </Button>
 
