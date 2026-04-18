@@ -31,6 +31,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  const url = new URL(event.request.url);
+  if (url.pathname.startsWith('/auth/')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request).catch(async () => {
       const cache = await caches.open(CACHE_NAME);
