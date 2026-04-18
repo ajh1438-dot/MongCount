@@ -1,0 +1,95 @@
+{
+  "completed_stage": "handoff-prepared",
+  "completed_skill": "docs-specialist:handoff-context-snapshot",
+  "next_skill": "auto-orchestrate",
+  "resume_command": "/auto-orchestrate",
+  "created_at": "2026-04-18T12:00:31+09:00",
+  "context_summary": {
+    "product_priorities": [
+      "Preserve calm, minimal, mobile-first PWA UX (<640px primary).",
+      "Protect S1→S2→S3 core loop quality before expanding secondary features.",
+      "Use documented UX contracts in docs/planning and specs/screens as source of truth."
+    ],
+    "execution_model": [
+      "Operate orchestrator-first: decompose work, delegate implementation, keep central QA/integration gate.",
+      "Before execution, read docs/planning/06-tasks.md, docs/planning/06-screens.md, specs/domain/resources.yaml, then latest .claude/handoffs/handoff-*.json.",
+      "If tasks are coarse for multi-agent execution, split into smaller assignable units before dispatch.",
+      "Limit active coding peers to ~3-4 concurrent implementers on adjacent surfaces, then run integration checkpoints."
+    ],
+    "current_repo_state": {
+      "snapshot_time": "2026-04-18T12:00:31+09:00",
+      "working_tree": "dirty with many uncommitted changes and new files",
+      "git_status_short": [
+        "M AGENTS.md",
+        "M app/layout.tsx",
+        "M app/page.tsx",
+        "M next.config.ts",
+        "M package-lock.json",
+        "M package.json",
+        "?? .github/",
+        "?? docs/",
+        "?? lib/",
+        "?? proxy.ts",
+        "?? specs/",
+        "?? supabase/",
+        "?? vercel.json"
+      ],
+      "implementation_baseline": [
+        "Next.js 16.2.4 + React 19 + TypeScript scaffold is present.",
+        "Supabase SSR helpers exist: lib/supabase/client.ts and lib/supabase/server.ts.",
+        "Route protection/session sync uses proxy.ts (not middleware.ts).",
+        "Migration scaffold exists but schema is not implemented yet (supabase/migrations/00000000000000_init.sql contains template comments only).",
+        "Main app screens are largely not implemented yet; app/page.tsx is a starter status page."
+      ],
+      "planning_and_specs_present": [
+        "docs/planning/06-tasks.md (peer-executable execution contract, updated 2026-04-18)",
+        "docs/planning/06-screens.md (locked screen contract)",
+        "specs/domain/resources.yaml (8 resources, v2.0)",
+        "specs/screens/*.yaml and specs/shared/*.yaml"
+      ]
+    },
+    "key_constraints": [
+      "Follow TDD per task: RED → GREEN → REFACTOR → VERIFY.",
+      "Do not introduce out-of-scope features (guide audio/prompt/gamification out of MVP scope).",
+      "Keep fixed notification slots unchanged: 08:30, 10:30, 13:00, 15:30, 19:00, 22:00.",
+      "Do not create a separate idea resource; use rest_sessions.note only.",
+      "Maintain login-optional local_only flow.",
+      "This project uses Supabase Cloud and proxy.ts instead of deprecated middleware.ts.",
+      "Given breaking changes in this Next.js version, read relevant guides under node_modules/next/dist/docs/ before implementation decisions."
+    ],
+    "quality_gates": [
+      "Contract gate: implementation matches docs/planning + specs/domain/resources.yaml + specs/screens/*.yaml + specs/shared/*.yaml.",
+      "Flow gate: S1→S2→S3 golden path + edge cases validated (abort, skip, resume/recovery).",
+      "Frontend gate: browser QA with console error checks for every UI phase.",
+      "Review chain per phase: verification, evaluation, code review, security review (as needed), frontend/design review (as needed).",
+      "Complexity gate: reject unnecessary abstraction or inconsistent patterns."
+    ],
+    "sequencing_guidance": [
+      "Phase order from 06-tasks: P0 setup → P1 common infra → P2 core loop → P3 onboarding/notifications → P4 archive/report → P5 paywall/settings/final states.",
+      "Near-term priority should focus on finishing P0 foundations and then P2 core loop quality once minimum infra is stable.",
+      "Keep one integration checkpoint after each parallel batch before opening next batch.",
+      "Do not treat placeholder UI as complete; require behavior and data contract validation."
+    ],
+    "known_gaps": [
+      "No previous handoff JSON existed before this file.",
+      "Supabase SQL schema/RLS from resources contract is not yet implemented in migration.",
+      "README is still default create-next-app template and not aligned with product docs.",
+      "Current app route is a starter page, not spec-compliant S1 implementation.",
+      "No visible test harness/config for required TDD chain (unit/e2e) is confirmed from inspected files."
+    ]
+  },
+  "output_files": [
+    "/Users/taucode2/Documents/MongCount2/docs/planning/06-tasks.md",
+    "/Users/taucode2/Documents/MongCount2/docs/planning/06-screens.md",
+    "/Users/taucode2/Documents/MongCount2/specs/domain/resources.yaml",
+    "/Users/taucode2/Documents/MongCount2/specs/screens/index.yaml",
+    "/Users/taucode2/Documents/MongCount2/specs/shared/components.yaml",
+    "/Users/taucode2/Documents/MongCount2/specs/shared/types.yaml",
+    "/Users/taucode2/Documents/MongCount2/.claude/handoffs/handoff-20260418-120031.json"
+  ],
+  "notes": [
+    "Supabase Cloud is the backend target environment; keep env and integration assumptions cloud-first.",
+    "Use proxy.ts for request-time auth/session handling; middleware.ts is deprecated in this setup.",
+    "Start each fresh orchestration run by loading this handoff and revalidating repo diffs before assigning work."
+  ]
+}

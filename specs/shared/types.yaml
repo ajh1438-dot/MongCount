@@ -1,0 +1,106 @@
+version: "2.0"
+# 여러 화면/리소스에서 공유하는 enum 및 type alias
+
+enums:
+  Slot:
+    description: 고정 알림 슬롯
+    values: ["08:30", "10:30", "13:00", "15:30", "19:00", "22:00", "adhoc"]
+
+  DurationPreset:
+    description: 쉼 타이머 기본 선택값 (분)
+    values: [3, 5, 10]
+    default: 5
+
+  Clarity:
+    description: 머리 맑기 스케일 (1=뿌연 → 5=맑은)
+    values: [1, 2, 3, 4, 5]
+    default: 3
+    emoji_map:
+      1: "☁︎"
+      2: "☁︎☁︎"
+      3: "☁︎☀︎"
+      4: "☀︎☀︎"
+      5: "☀︎☀︎☀︎"
+
+  Theme:
+    description: 다크모드 선택
+    values: [system, light, dark]
+    default: system
+
+  Provider:
+    description: OAuth 제공자
+    values: [google, kakao, local_only]
+
+  SubscriptionTier:
+    values: [free, premium]
+
+  SubscriptionStatus:
+    values: [trial, active, cancelled, expired]
+
+  SubscriptionPlan:
+    values: [monthly, annual]
+
+  Platform:
+    description: 런타임 플랫폼
+    values: [android_chrome, ios_safari, desktop]
+
+  DayDot:
+    description: 주간 리포트 요일별 상태
+    values: ["●", "◐", "◌", "─"]
+    meaning:
+      "●": 완료 (3회 이상)
+      "◐": 부분 (1-2회)
+      "◌": 미완 (0회)
+      "─": 예정 (미래)
+
+  NotificationAction:
+    description: 푸시 알림 액션 버튼
+    values: [now_rest, snooze_15, dismiss]
+
+  StateTransitionTrigger:
+    description: 화면 전환 공통 이벤트
+    values: [navigate, fade, modal_open, modal_close, deep_link, tab_switch]
+
+# ------------------------------------------------------------------
+# 공통 type 구조
+# ------------------------------------------------------------------
+types:
+  SessionSummary:
+    description: 세션 카드 등에서 사용하는 경량 프로젝션
+    fields:
+      - { name: id, type: uuid }
+      - { name: started_at, type: timestamptz }
+      - { name: clarity, type: Clarity }
+      - { name: note_preview, type: string, maxLength: 40 }
+      - { name: duration_actual_sec, type: int }
+
+  NotificationSlotConfig:
+    description: 슬롯 토글 상태
+    fields:
+      - { name: slot, type: Slot }
+      - { name: enabled, type: boolean }
+      - { name: message, type: string }
+
+  SnoozeEntry:
+    description: 스누즈 카운터 (슬롯별)
+    fields:
+      - { name: slot, type: Slot }
+      - { name: count_today, type: int, max: 3 }
+      - { name: last_snoozed_at, type: timestamptz }
+
+  WeekDotMap:
+    description: 주간 요일 상태 매핑
+    fields:
+      - { name: mon, type: DayDot }
+      - { name: tue, type: DayDot }
+      - { name: wed, type: DayDot }
+      - { name: thu, type: DayDot }
+      - { name: fri, type: DayDot }
+      - { name: sat, type: DayDot }
+      - { name: sun, type: DayDot }
+
+  OAuthCallbackResult:
+    fields:
+      - { name: user_id, type: uuid }
+      - { name: provider, type: Provider }
+      - { name: is_new_user, type: boolean }

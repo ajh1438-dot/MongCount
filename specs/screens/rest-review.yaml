@@ -1,0 +1,124 @@
+version: "2.0"
+
+screen:
+  id: S3
+  name: 집중도 + 한줄 기록
+  route: /rest/review
+  priority: P0
+  layout: form-center
+  purpose: 쉼 종료 후 "머리 맑기" 정량화 + 아이디어 빠른 캡처
+
+entry_paths:
+  - from: S2
+    trigger: 타이머 완료 (auto)
+  - from: S2
+    trigger: "[쉼 중단]"
+    note: clarity_suggested=1-2 사전 세팅
+
+exit_paths:
+  - to: S1
+    trigger: "[저장]"
+    delay: 2000ms
+  - to: S1
+    trigger: "[건너뛰기]"
+    immediate: true
+  - to: S1
+    trigger: auto_dismiss_on_empty
+    delay: 3000ms
+
+data_requirements:
+  - resource: rest_sessions
+    needs: [id, clarity, note, completed, ended_at]
+    action: update
+    scope: "session_id from S2"
+
+components:
+  - id: success_header
+    type: heading
+    position: top
+    function: "5분을 마치셨어요 ✓"
+  - id: clarity_slider
+    type: slider
+    position: main
+    function: "☁︎(1) → ☀︎(5) 5단계 슬라이더, 이모지 동적 표시"
+    range: [1, 5]
+    step: 1
+    default: 3
+    data_source: { resource: rest_sessions, field: clarity }
+    labels: { left: "뿌연", right: "맑은" }
+  - id: note_field
+    type: text_input
+    position: main
+    function: "한 줄로 남길 말씀 있으신가요? — 자동 포커스"
+    max_length: 280
+    auto_focus: true
+    data_source: { resource: rest_sessions, field: note }
+  - id: save_button
+    type: primary_button
+    position: bottom
+    function: "[저장] — 기본 CTA"
+    action: save_and_exit
+  - id: skip_button
+    type: secondary_button
+    position: bottom
+    function: "[건너뛰기]"
+    action: skip_and_exit
+
+states:
+  - name: default
+    when: 정상 완료
+    slider_default: 3
+  - name: aborted
+    when: from_abort=true
+    slider_default: 2
+    display: "중단됨 — 짧게 쉬셨네요"
+  - name: saving
+    when: save in-flight
+    display: "[저장] disabled + 스피너"
+
+technical:
+  slider: shadcn/ui Slider
+  emoji_mapper: "clarity → ['☁︎','☁︎☁︎','☁︎☀︎','☀︎☀︎','☀︎☀︎☀︎']"
+  note_save: Dexie.js debounce 500ms
+  cloud_sync: 온라인 시 Supabase UPDATE 비동기 POST
+  offline_queue: 오프라인 시 outbox 저장, 재접속 시 flush
+
+events:
+  - trigger: slider.drag
+    action: update_emoji_display, update_preview
+  - trigger: note_field.input
+    action: debounced_local_save
+  - trigger: save_button.tap
+    action: [persist(clarity, note, ended_at=now), toast("저장했어요 ✓"), navigate(S1, delay=2000)]
+  - trigger: skip_button.tap
+    action: [persist(clarity=default, note=null), navigate(S1)]
+
+tests:
+  - name: 기본 저장
+    when: clarity=4 + note 입력 + [저장]
+    then: [rest_sessions 업데이트, 토스트 표시, 2초 후 S1 복귀]
+  - name: 중단 경로 기본값
+    when: from_abort=true 진입
+    then: [slider 기본 2로 세팅, 수정 가능]
+  - name: 건너뛰기
+    when: "[건너뛰기] 탭"
+    then: [clarity=3으로 저장, note=null, 즉시 S1 복귀]
+  - name: 오프라인 저장
+    when: network offline + 저장
+    then: [로컬 Dexie 저장 성공, outbox 큐 적재, 토스트 표시]
+
+accessibility:
+  slider_keyboard: 화살표 키로 ±1 조작
+  aria:
+    clarity_slider: "머리가 얼마나 맑나요? 1부터 5까지"
+    note_field: "한 줄 기록 입력"
+  autofocus_strategy: note_field에 포커스, 슬라이더는 Tab으로 접근
+
+design_reference:
+  source: stitch
+  project_id: "15346377825100012810"
+  screen_id: "1c52b5372e47431480be3fdfde8b13c1"
+  image: "design/screens/rest-review.png"
+  html: "design/html/rest-review.html"
+  design_system_asset: "740110224819224335"
+  generated_at: "2026-04-17T00:23+09:00"

@@ -1,0 +1,118 @@
+version: "2.0"
+
+screen:
+  id: S1
+  name: 홈 / 대시보드
+  route: /
+  priority: P0
+  layout: mobile-stack-with-bottom-tabs
+  purpose: 오늘의 쉼 진행도 즉시 파악 + 원탭 쉼 진입 허브
+
+entry_paths:
+  - from: app_launch
+    condition: onboarding_completed=true
+  - from: S3
+    condition: session_saved
+  - from: S5 | S6 | S9
+    condition: bottom_tab=home
+
+exit_paths:
+  - to: S2
+    trigger: "[지금 3분 쉬기] 탭"
+    transition: fade-300ms
+  - to: S5
+    trigger: 하단탭 [아카이브]
+  - to: S6
+    trigger: 하단탭 [리포트]
+  - to: S9
+    trigger: 하단탭 [설정]
+
+data_requirements:
+  - resource: today_progress
+    needs: [completed_count, target_count, next_slot_time, next_slot_in_minutes, last_session, soft_streak_days]
+    scope: current_user
+  - resource: users
+    needs: [display_name, provider]
+    scope: current_user
+  - resource: user_preferences
+    needs: [theme]
+
+components:
+  - id: header
+    type: app_header
+    position: top
+    function: 앱 로고 + 설정 아이콘
+  - id: greeting
+    type: text_block
+    position: main
+    function: "안녕하세요, {display_name}"
+    data_source: { resource: users, field: display_name }
+  - id: progress_card
+    type: card
+    position: main
+    function: 오늘 N/6 진행도 + ☀︎ 도트 + 다음 슬롯까지 남은 시간
+    data_source: { resource: today_progress }
+  - id: start_button
+    type: primary_button_large
+    position: main
+    function: "[지금 3분 쉬기] — 대형 CTA, 화면 높이 1/3 차지"
+    action: navigate(S2)
+  - id: last_session_row
+    type: text_row
+    position: main
+    function: "마지막 쉼: {relative_time} + clarity 도트"
+    data_source: { resource: today_progress, field: last_session }
+    visible_when: last_session != null
+  - id: bottom_tabs
+    type: bottom_tab_nav
+    position: bottom
+    function: 홈/아카이브/리포트/설정 네비게이션
+
+states:
+  - name: default
+    when: 당일 1회 이상 완료
+  - name: first_launch
+    when: completed_count=0 AND soft_streak_days=0
+    display: "오늘의 첫 쉼을 시작해보세요"
+  - name: all_completed
+    when: completed_count>=6
+    display: "오늘 쉼을 모두 완료했어요 ✨ + 진행도 만도"
+  - name: guest_banner
+    when: user.provider=local_only
+    display: 상단 dismissible 로그인 배너
+
+events:
+  - trigger: progress_card.hover
+    action: toast("오늘 하루를 천천히 돌아봐요")
+  - trigger: start_button.tap
+    action: navigate(S2, { duration_preset: last_used || 5 })
+
+tests:
+  - name: 진행도 초기 표시
+    when: 완료 3회 상태로 홈 진입
+    then: [progress 3/6 표시, 맑음 도트 3개, 다음 슬롯 시간 표시]
+  - name: 첫 실행 메시지
+    when: completed_count=0
+    then: ["'오늘의 첫 쉼을 시작해보세요' 표시", last_session_row 숨김]
+  - name: 원탭 쉼 시작
+    when: start_button 탭
+    then: [S2로 fade transition, duration 기본 5분]
+  - name: 모든 알림 완료 상태
+    when: completed_count >= 6
+    then: ["'오늘 쉼을 모두 완료했어요 ✨'", 진행도 6/6 만도]
+
+accessibility:
+  aria:
+    progress_card: "오늘 {completed_count}회 완료, {target_count}회 목표"
+    start_button: "지금 쉼 시작하기"
+  keyboard: tab 순서 = [header.settings, start_button, tabs]
+  focus_ring: outline-2 offset-2
+
+design_reference:
+  source: stitch
+  project_id: "15346377825100012810"
+  screen_id: "c6009d86fbfa4fae884437d04d175e22"
+  image: "design/screens/home.png"
+  html: "design/html/home.html"
+  design_system_asset: "740110224819224335"
+  generated_at: "2026-04-17T00:19+09:00"

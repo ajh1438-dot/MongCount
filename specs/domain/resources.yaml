@@ -1,0 +1,136 @@
+version: "2.0"
+# MongCount (쉼일지) 도메인 리소스 정의
+# 화면은 data_requirements.resource로만 참조, 백엔드는 독립적으로 구현
+
+resources:
+  # ------------------------------------------------------------------
+  # 핵심: 쉼 세션 기록 (S1, S2, S3, S5, S6 전부 사용)
+  # ------------------------------------------------------------------
+  rest_sessions:
+    description: 5분 쉼 세션 단위 기록 (타이머 + 집중도 + 한줄 메모)
+    storage: [indexeddb_dexie, supabase_postgres]
+    sync: bidirectional
+    fields:
+      - { name: id, type: uuid, pk: true }
+      - { name: user_id, type: uuid, nullable: true, note: "로컬 전용 시 null" }
+      - { name: slot, type: enum, values: ["08:30","10:30","13:00","15:30","19:00","22:00","adhoc"] }
+      - { name: duration_preset, type: enum, values: [3, 5, 10], default: 5 }
+      - { name: duration_actual_sec, type: int, note: "실제 경과 초" }
+      - { name: started_at, type: timestamptz }
+      - { name: ended_at, type: timestamptz, nullable: true }
+      - { name: completed, type: boolean, default: false, note: "중단 시 false" }
+      - { name: clarity, type: int, range: [1, 5], nullable: true, note: "☁︎1-5☀︎" }
+      - { name: note, type: text, maxLength: 280, nullable: true, note: "한 줄 기록" }
+      - { name: created_at, type: timestamptz, default: now }
+    indexes:
+      - [user_id, started_at]
+      - [started_at]
+    retention:
+      free: 7_days
+      premium: unlimited
+
+  # ------------------------------------------------------------------
+  # 사용자 & 설정
+  # ------------------------------------------------------------------
+  users:
+    description: 계정 정보 (Google/Kakao OAuth 또는 로컬 전용)
+    storage: [supabase_auth]
+    fields:
+      - { name: id, type: uuid, pk: true }
+      - { name: email, type: string, nullable: true }
+      - { name: display_name, type: string, nullable: true }
+      - { name: provider, type: enum, values: [google, kakao, local_only] }
+      - { name: created_at, type: timestamptz }
+
+  user_preferences:
+    description: 사용자 설정 (알림 토글, 다크모드, 온보딩 상태)
+    storage: [localstorage, supabase_postgres]
+    fields:
+      - { name: user_id, type: uuid, pk: true }
+      - { name: notification_slots, type: json, note: '{"08:30": true, "10:30": true, ...}' }
+      - { name: theme, type: enum, values: [system, light, dark], default: system }
+      - { name: onboarding_completed, type: boolean, default: false }
+      - { name: timezone, type: string, default: "Asia/Seoul" }
+      - { name: updated_at, type: timestamptz }
+
+  # ------------------------------------------------------------------
+  # 알림 (푸시 스케줄 + 스누즈)
+  # ------------------------------------------------------------------
+  notification_subscriptions:
+    description: Web Push 구독 정보 + 스누즈 카운터 (S4, S9 사용)
+    storage: [supabase_postgres]
+    fields:
+      - { name: id, type: uuid, pk: true }
+      - { name: user_id, type: uuid }
+      - { name: endpoint, type: string, note: "Web Push endpoint" }
+      - { name: keys, type: json, note: "p256dh, auth" }
+      - { name: platform, type: enum, values: [android_chrome, ios_safari, desktop] }
+      - { name: created_at, type: timestamptz }
+      - { name: snooze_log, type: json, note: "{slot: {count, last_at}} 하루 단위 리셋" }
+    constraints:
+      - { name: per_slot_max, value: 3, note: "slot별 snooze 최대 3회" }
+
+  # ------------------------------------------------------------------
+  # 주간 리포트 (S6)
+  # ------------------------------------------------------------------
+  weekly_reports:
+    description: 주간 집계 + AI 코멘트 (매일 자정 생성, Edge Function)
+    storage: [supabase_postgres]
+    fields:
+      - { name: id, type: uuid, pk: true }
+      - { name: user_id, type: uuid }
+      - { name: week_start, type: date, note: "월요일" }
+      - { name: completed_days, type: int, range: [0, 7] }
+      - { name: day_dots, type: json, note: '{"mon":"●","tue":"◐","wed":"◌","thu":"─",...}' }
+      - { name: avg_clarity, type: float, nullable: true }
+      - { name: best_session_id, type: uuid, nullable: true }
+      - { name: ai_comment, type: text, maxLength: 120 }
+      - { name: generated_at, type: timestamptz }
+
+  monthly_reports:
+    description: 월간 집계 + 추세 그래프 (유료 P5)
+    storage: [supabase_postgres]
+    gated: premium
+    fields:
+      - { name: id, type: uuid, pk: true }
+      - { name: user_id, type: uuid }
+      - { name: month, type: date, note: "YYYY-MM-01" }
+      - { name: daily_clarity, type: json, note: "[{date, avg_clarity, count}]" }
+      - { name: total_sessions, type: int }
+      - { name: max_clarity_session_id, type: uuid, nullable: true }
+      - { name: min_clarity_session_id, type: uuid, nullable: true }
+      - { name: generated_at, type: timestamptz }
+
+  # ------------------------------------------------------------------
+  # 구독 & 결제 (S10)
+  # ------------------------------------------------------------------
+  subscriptions:
+    description: 유료 구독 상태 (Stripe 또는 IAP)
+    storage: [supabase_postgres]
+    fields:
+      - { name: id, type: uuid, pk: true }
+      - { name: user_id, type: uuid }
+      - { name: tier, type: enum, values: [free, premium] }
+      - { name: status, type: enum, values: [trial, active, cancelled, expired] }
+      - { name: plan, type: enum, values: [monthly, annual], nullable: true }
+      - { name: trial_ends_at, type: timestamptz, nullable: true }
+      - { name: current_period_end, type: timestamptz, nullable: true }
+      - { name: provider, type: enum, values: [stripe, iap], nullable: true }
+      - { name: updated_at, type: timestamptz }
+
+  # ------------------------------------------------------------------
+  # 집계 뷰 (화면 전용 읽기 모델)
+  # ------------------------------------------------------------------
+  today_progress:
+    description: S1 홈의 오늘 진행도 집계 (뷰 또는 클라이언트 계산)
+    storage: [derived_view]
+    derived_from: [rest_sessions, user_preferences]
+    fields:
+      - { name: user_id, type: uuid }
+      - { name: date, type: date }
+      - { name: completed_count, type: int }
+      - { name: target_count, type: int, default: 6 }
+      - { name: next_slot_time, type: string, nullable: true }
+      - { name: next_slot_in_minutes, type: int, nullable: true }
+      - { name: last_session, type: "ref:rest_sessions", nullable: true }
+      - { name: soft_streak_days, type: int, note: "일 3회 이상 연속 일수" }

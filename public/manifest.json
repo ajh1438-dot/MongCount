@@ -1,0 +1,18 @@
+{
+  "name": "MongCount",
+  "short_name": "MongCount",
+  "description": "쉬어야 일이 잘 풀려. 의도된 쉼을 기록하는 MongCount.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f5f4",
+  "theme_color": "#f5f5f4",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

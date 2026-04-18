@@ -1,0 +1,139 @@
+version: "2.0"
+
+screen:
+  id: S6
+  name: 주간 리포트
+  route: /report
+  priority: P1
+  layout: mobile-stack-with-bottom-tabs
+  purpose: 주간 쉼 패턴 시각화 + AI 코멘트로 "더 잘 쉬는 사람" 자각
+
+entry_paths:
+  - from: S1
+    trigger: 하단탭 [리포트]
+
+exit_paths:
+  - to: S1
+    trigger: 하단탭 [홈]
+  - to: S10
+    trigger: "[월간] 탭 (free 유저)"
+
+data_requirements:
+  - resource: weekly_reports
+    needs: [week_start, completed_days, day_dots, avg_clarity, best_session_id, ai_comment, generated_at]
+    scope: current_user
+    filters: { week_start: current_week }
+  - resource: rest_sessions
+    needs: [id, slot, clarity, started_at]
+    note: best_session_id로 조인하여 상세 표시
+  - resource: subscriptions
+    needs: [tier]
+  - resource: monthly_reports
+    needs: [month, daily_clarity, total_sessions, max_clarity_session_id, min_clarity_session_id, generated_at]
+    scope: current_user
+    conditional: monthly_tab_active AND tier=premium
+
+components:
+  - id: header
+    type: app_header
+    position: top
+    function: "주간 리포트 제목 + [월간] 탭 버튼"
+  - id: week_range
+    type: text_block
+    position: main
+    function: "4월 14~20일 (이번 주)"
+    data_source: { computed: format_week_range(week_start) }
+  - id: day_dots_row
+    type: dot_row
+    position: main
+    function: "월화수목금토일 + 도트(●완료/◐부분/◌미완/─예정)"
+    data_source: { resource: weekly_reports, field: day_dots }
+  - id: avg_clarity_row
+    type: stat_row
+    position: main
+    function: "평균 맑기: ☀︎☀︎☀︎.5"
+    data_source: { resource: weekly_reports, field: avg_clarity }
+  - id: best_session_highlight
+    type: card
+    position: main
+    function: "가장 맑았을 때: {weekday} {time} + clarity 도트 (최고)"
+    data_source: { resource: rest_sessions, via: best_session_id }
+    visible_when: best_session_id != null
+  - id: ai_comment_card
+    type: callout_card
+    position: main
+    function: "AI 코멘트 (100자 내외)"
+    data_source: { resource: weekly_reports, field: ai_comment }
+  - id: monthly_tab_button
+    type: tab_button
+    position: top_right
+    function: "[월간] — free 유저는 Paywall 유도"
+    action: tier=premium ? show_monthly : navigate(S10)
+  - id: bottom_tabs
+    type: bottom_tab_nav
+    position: bottom
+
+states:
+  - name: default
+    when: weekly_report 존재
+  - name: generating
+    when: 자정 직후 + report 아직 생성 전
+    display: 스켈레톤 + "리포트 생성 중"
+  - name: empty
+    when: 주간 세션 0건
+    display: "이번 주 기록이 없어요. 첫 쉼을 시작해보세요."
+  - name: monthly_premium
+    when: tier=premium AND monthly tab active
+    display: 월간 그래프 + 4주 비교 (monthly_reports 리소스 사용)
+
+dot_legend:
+  "●": 완료 (Soft Streak 기준 3회 이상)
+  "◐": 부분 (1-2회 완료)
+  "◌": 미완 (0회)
+  "─": 예정 (미래 날짜)
+
+technical:
+  aggregation: Supabase SQL GROUP BY week + Edge Function
+  ai_model: GPT-3.5-Turbo 또는 Claude Haiku (한국어, max 100자)
+  generation_schedule: 매일 자정 (cron)
+  caching: generated_at 이후 변경 불가 (당일분은 rolling)
+
+events:
+  - trigger: monthly_tab_button.tap
+    action: tier=premium ? load_monthly : navigate(S10, { source: weekly_monthly_tab })
+  - trigger: best_session_highlight.tap
+    action: navigate(S2, { mode: readonly, session_id: best_session_id })
+  - trigger: dot.hover
+    action: tooltip("{weekday}: {completed_count}회 완료")
+
+tests:
+  - name: 기본 리포트 표시
+    when: weekly_reports 존재
+    then: [도트 7개, 평균 맑기, best_session, AI 코멘트 모두 표시]
+  - name: 월간 탭 — free 유저
+    when: tier=free + [월간] 탭
+    then: [S10 Paywall로 네비게이트]
+  - name: 월간 탭 — premium
+    when: tier=premium + [월간] 탭
+    then: [월간 그래프 표시, 4주 비교]
+  - name: 빈 주간
+    when: 이번주 세션 0건
+    then: ["'이번 주 기록이 없어요' 표시", 도트 모두 ◌]
+  - name: 리포트 미생성
+    when: weekly_reports.generated_at < 오늘자정
+    then: [스켈레톤 로딩 표시, 백그라운드 생성 트리거]
+
+accessibility:
+  aria:
+    day_dots_row: "월요일 완료, 화요일 완료, 수요일 부분, ..." (도트별 읽음)
+    ai_comment_card: "AI 코멘트: {text}"
+  keyboard: Tab으로 [월간] 버튼 및 best_session 접근
+
+design_reference:
+  source: stitch
+  project_id: "15346377825100012810"
+  screen_id: "07a8be1ce0a64bda984ccaff022b760f"
+  image: "design/screens/weekly-report.png"
+  html: "design/html/weekly-report.html"
+  design_system_asset: "740110224819224335"
+  generated_at: "2026-04-17T00:27+09:00"

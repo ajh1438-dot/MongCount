@@ -1,0 +1,111 @@
+version: "2.0"
+
+screen:
+  id: S2
+  name: 쉼 세션 타이머
+  route: /rest
+  priority: P0
+  layout: fullscreen-center
+  purpose: 5분(또는 3/10분) 순수 쉼 경험. 극도로 심플한 UI.
+
+entry_paths:
+  - from: S1
+    trigger: "[지금 3분 쉬기] → 타이머 선택 팝업"
+  - from: S4
+    trigger: "알림 액션 [지금 쉬기]"
+    note: 마지막 선택 duration 기억
+  - from: S5
+    trigger: 과거 세션 재생 (읽기 전용)
+
+exit_paths:
+  - to: S3
+    trigger: 타이머 완료
+    transition: fade-out-auto
+  - to: S3
+    trigger: "[쉼 중단]"
+    note: clarity 기본값 1-2 자동 제안
+
+data_requirements:
+  - resource: rest_sessions
+    needs: [id, slot, duration_preset, started_at]
+    action: create
+    note: 화면 진입 시 local로 생성, Supabase는 완료 시 동기화
+
+components:
+  - id: timer_display
+    type: large_numeric
+    position: main-center
+    function: "MM:SS 카운트다운 (큰 글씨, 화면 중앙)"
+    style: { font_size: xl, weight: light }
+  - id: hint_strip
+    type: text_strip
+    position: above-progress
+    function: "생각 떠오르면 잊지 말고 (작은 글씨, 선택적 캡처 유도)"
+  - id: progress_bar
+    type: linear_progress
+    position: mid
+    function: 타이머 경과 비율 (0→1)
+    data_source: { computed: "elapsed_sec / duration_sec" }
+  - id: abort_button
+    type: tertiary_button
+    position: bottom
+    function: "[쉼 중단] — 눌러도 확인 다이얼로그로 보호"
+    action: confirm_then_abort
+
+states:
+  - name: running
+    when: timer active
+  - name: paused
+    when: 전화 수신 등 인터럽트
+    display: "⏸ + [계속?] 버튼"
+  - name: completed
+    when: elapsed_sec >= duration_sec
+    transition: auto-fade → S3
+  - name: replay_readonly
+    when: entry=from_archive
+    display: abort_button 숨김, [뒤로]만 표시
+
+technical:
+  timer_precision: requestAnimationFrame (60fps)
+  background: Service Worker로 지속 카운트
+  crash_recovery: localStorage.sessionStartTime + duration_preset으로 남은 시간 재계산
+  sound: 기본 mute
+  keep_awake: wakeLock API (지원 시)
+
+events:
+  - trigger: timer_complete
+    action: [persist(completed=true), navigate(S3)]
+  - trigger: abort_button.tap
+    action: confirm("정말 중단하시겠습니까?") → if yes: navigate(S3, { clarity_suggested: 2, completed: false })
+  - trigger: visibility_change_hidden
+    action: service_worker_continues, 화면 꺼져도 타이머 유지
+
+tests:
+  - name: 5분 정상 완료
+    when: timer 300초 경과
+    then: [자동 fade-out, S3로 이동, rest_sessions.completed=true]
+  - name: 백그라운드 복귀
+    when: 앱 전환 후 60초 뒤 복귀
+    then: [타이머 60초 감소 반영, 오차 <1초]
+  - name: 중단 플로우
+    when: abort_button → 확인
+    then: [S3로 이동, clarity_suggested=2, completed=false 저장]
+  - name: 크래시 복구
+    when: 앱 강제종료 후 재진입
+    then: [localStorage 기반으로 남은 시간 복원]
+
+accessibility:
+  aria:
+    timer_display: "aria-live=polite, 숫자 변경 시 스크린리더 읽음"
+    abort_button: "쉼 중단"
+  contrast: 다크모드 시 숫자 충분한 명도 (#E8E8E8 on #0F0F0F)
+  focus: abort_button만 focusable
+
+design_reference:
+  source: stitch
+  project_id: "15346377825100012810"
+  screen_id: "e27204c944024e4dab930f1270cad1e8"
+  image: "design/screens/rest-timer.png"
+  html: "design/html/rest-timer.html"
+  design_system_asset: "740110224819224335"
+  generated_at: "2026-04-17T00:21+09:00"

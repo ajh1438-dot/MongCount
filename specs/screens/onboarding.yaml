@@ -1,0 +1,131 @@
+version: "2.0"
+
+screen:
+  id: S7
+  name: 온보딩 (3 스크린)
+  route: /onboarding
+  priority: P0
+  layout: fullscreen-paginated
+  purpose: 첫 사용자에게 MongCount 철학 교육 + 알림 권한 허용
+
+entry_paths:
+  - from: app_first_launch
+    condition: onboarding_completed=false
+
+exit_paths:
+  - to: S8
+    trigger: "S7-3 [시작하기]"
+    note: 로그인 선택 가능
+  - to: S1
+    trigger: "[건너뛰기] 또는 로그인 우회"
+
+data_requirements:
+  - resource: user_preferences
+    needs: [onboarding_completed, notification_slots]
+    action: create_or_update
+  - resource: notification_subscriptions
+    needs: [endpoint, keys, platform]
+    action: create
+    conditional: on_permission_granted
+
+sub_screens:
+  - id: S7-1
+    name: DMN 과학 교육
+    components:
+      - { type: icon, content: "🧠 (뇌 아이콘, 큼)" }
+      - { type: heading, content: "쉴 때 뇌의 활동이 가장 활발하대요." }
+      - { type: paragraph, content: "Default Mode Network(DMN)란? 외부 자극에서 벗어나 내부 성찰과 창의성이 극대화되는 뇌의 상태입니다." }
+      - { type: evidence_row, content: "연구: 하버드, MIT, 스탠포드 / 결과: 창의성↑ 스트레스↓" }
+      - { type: primary_button, label: "[다음 →]", action: "next_page" }
+
+  - id: S7-2
+    name: 알림 권한 요청
+    components:
+      - { type: icon, content: "🔔" }
+      - { type: heading, content: "하루 6번, 5분씩. 쉬는 시간 알림 드릴게요." }
+      - { type: slot_list, content: "08:30 · 10:30 · 13:00 · 15:30 · 19:00 · 22:00" }
+      - { type: paragraph, content: "알림을 켜면 놓치지 않아요. (물론 건너뛸 수도 있어요)" }
+      - { type: primary_button, label: "[알림 허용]", action: "request_push_permission" }
+      - { type: secondary_button, label: "[건너뛰기]", action: "skip_permission" }
+    ios_pwa_followup:
+      trigger: platform=ios_safari AND permission_granted
+      content: iPhone 홈화면 추가 가이드 (3-step)
+
+  - id: S7-3
+    name: 시작
+    components:
+      - { type: icon, content: "⏱️" }
+      - { type: heading, content: "언제든 '지금 3분 쉬기' 버튼이 있어요." }
+      - { type: paragraph, content: "쉼의 시간을 선택하고 (3/5/10분), 침묵 속에서 명확함을 찾아보세요." }
+      - { type: bullet_list, items: ["일을 잘하기 위한 것", "자유롭고 강제되지 않음", "매번 기록해서 성장함"] }
+      - { type: primary_button, label: "[시작하기 →]", action: "complete_onboarding" }
+
+states:
+  - name: page_1
+    active: S7-1
+  - name: page_2
+    active: S7-2
+  - name: page_2_ios_guide
+    active: iOS PWA 추가 가이드
+    visible_when: platform=ios AND permission_requested
+  - name: page_3
+    active: S7-3
+  - name: completed
+    action: [save(onboarding_completed=true), navigate(S8 or S1)]
+
+technical:
+  persistence: localStorage.onboarding_completed=true
+  push_api: navigator.serviceWorker.register + PushManager.subscribe
+  ios_detection: "navigator.userAgent 또는 'standalone' in navigator"
+  rewatch: 설정 화면에서 [온보딩 다시 보기]로 재진입 가능
+
+events:
+  - trigger: S7-1 next
+    action: page=2
+  - trigger: S7-2 [알림 허용]
+    action: Notification.requestPermission() → if granted: create notification_subscription
+  - trigger: S7-2 [건너뛰기]
+    action: page=3 (skip permission)
+  - trigger: S7-3 [시작하기]
+    action: [save(onboarding_completed=true), navigate(S8)]
+
+tests:
+  - name: 첫 실행 진입
+    when: onboarding_completed=false
+    then: [S7-1부터 표시]
+  - name: 알림 허용 플로우
+    when: S7-2 [알림 허용] → 브라우저 권한 dialog → 허용
+    then: [notification_subscriptions 생성, S7-3로 이동]
+  - name: 알림 거부 경로
+    when: 권한 거부
+    then: [S7-3로 계속 진행, 설정에서 나중에 켤 수 있음 안내]
+  - name: iOS PWA 가이드
+    when: iOS Safari에서 진입
+    then: [S7-2 이후 홈화면 추가 가이드 표시]
+  - name: 온보딩 스킵 방지
+    when: 완료 후 재방문
+    then: [onboarding 스킵, 바로 S1]
+
+accessibility:
+  aria_page_indicator: "3단계 중 {N}단계"
+  focus: 각 페이지 진입 시 heading에 focus
+  skip_link: 스크린리더 사용자용 "[본문으로 건너뛰기]"
+
+design_reference:
+  source: stitch
+  project_id: "15346377825100012810"
+  design_system_asset: "740110224819224335"
+  pages:
+    - sub_screen: S7-1
+      screen_id: "559a4bfce4d04e7b92f16d728ce01f11"
+      image: "design/screens/onboarding-1.png"
+      html: "design/html/onboarding-1.html"
+    - sub_screen: S7-2
+      screen_id: "394601172be5449fb4b9e6ae395393b1"
+      image: "design/screens/onboarding-2.png"
+      html: "design/html/onboarding-2.html"
+    - sub_screen: S7-3
+      screen_id: "8e6179f7bbb548148523fd6136b362f5"
+      image: "design/screens/onboarding-3.png"
+      html: "design/html/onboarding-3.html"
+  generated_at: "2026-04-17T00:29+09:00"

@@ -1,0 +1,214 @@
+version: "2.0"
+# 여러 화면에서 반복되는 공통 컴포넌트 정의
+# 각 화면의 components[].type 참조 시 여기 정의를 따름
+
+components:
+  # ------------------------------------------------------------------
+  # 레이아웃 & 네비게이션
+  # ------------------------------------------------------------------
+  bottom_tab_nav:
+    description: 하단 고정 4-탭 네비게이션
+    used_in: [S1, S5, S6, S9]
+    tabs: [home, archive, report, settings]
+    active_state: "아이콘 채움 + 텍스트 색상 변경"
+    inactive_state: "아이콘 outline + 회색"
+    position: bottom-fixed
+    safe_area: ios_bottom_inset
+
+  app_header:
+    description: 상단 앱 헤더 (타이틀 + 오른쪽 아이콘 영역)
+    used_in: [S1, S5, S6, S9]
+    slots: [title, right_actions]
+
+  modal_header:
+    description: 모달용 헤더 (닫기 × 버튼 포함)
+    used_in: [S10]
+
+  # ------------------------------------------------------------------
+  # 버튼 시스템
+  # ------------------------------------------------------------------
+  primary_button:
+    description: 메인 액션 버튼 (파란 배경, 흰 텍스트)
+    used_in: [S3, S7, S8, S10]
+    style: { bg: primary, text: white, radius: md }
+    min_hit_target: 44px
+
+  primary_button_large:
+    description: 대형 CTA (화면 1/3 차지)
+    used_in: [S1]
+    min_height: 100px
+
+  secondary_button:
+    description: 보조 액션 (회색 배경)
+    used_in: [S3, S7, S8]
+    style: { bg: neutral-200, text: neutral-900 }
+
+  tertiary_button:
+    description: 텍스트만, 밑줄 (낮은 강조)
+    used_in: [S2, S8, S11]
+
+  danger_button:
+    description: 위험 액션 (빨강)
+    used_in: [S9]
+    style: { bg: danger, text: white }
+    confirm_required: true
+
+  oauth_button:
+    description: OAuth 제공자별 버튼 (로고 + 텍스트)
+    used_in: [S8]
+    providers: [google, kakao]
+
+  # ------------------------------------------------------------------
+  # 입력 & 선택
+  # ------------------------------------------------------------------
+  slider:
+    description: shadcn/ui Slider (드래그 가능)
+    used_in: [S3]
+    range: [1, 5]
+    step: 1
+    accessibility: 화살표 키 조작 지원
+
+  toggle_list:
+    description: 여러 항목 ON/OFF 리스트
+    used_in: [S9]
+    interaction: optimistic_update
+
+  radio_group:
+    description: 단일 선택 라디오 그룹
+    used_in: [S9]
+
+  text_input:
+    description: 단일 줄 텍스트 입력 (max_length 지원)
+    used_in: [S3]
+
+  text_search:
+    description: 검색 입력 필드 (아이콘 + 지우기)
+    used_in: [S5]
+
+  chip_group:
+    description: 필터 칩 그룹 (다중/단일 선택)
+    used_in: [S5]
+
+  # ------------------------------------------------------------------
+  # 표시 & 데이터
+  # ------------------------------------------------------------------
+  card:
+    description: 기본 카드 (제목 + 본문)
+    used_in: [S1, S6, S10]
+    style: { radius: lg, padding: 16, shadow: sm }
+
+  card_cta:
+    description: CTA 포함 카드 (업그레이드 등)
+    used_in: [S9]
+
+  pricing_card:
+    description: 가격 플랜 카드 (월/연 비교)
+    used_in: [S10]
+
+  check_list:
+    description: 체크마크 리스트 (기능 설명)
+    used_in: [S10]
+    icon: "✓"
+
+  dot_row:
+    description: 도트 로우 (주간 리포트 요일별 상태)
+    used_in: [S6]
+    icons: { done: "●", partial: "◐", none: "◌", future: "─" }
+
+  stat_row:
+    description: 통계 한 줄 (라벨 + 값)
+    used_in: [S6]
+
+  callout_card:
+    description: 강조 박스 (AI 코멘트 등)
+    used_in: [S6]
+
+  virtual_list:
+    description: 가상 스크롤 리스트 (500+ 항목 성능)
+    used_in: [S5]
+    threshold: 50
+
+  large_numeric:
+    description: 대형 숫자 표시 (타이머 등)
+    used_in: [S2]
+    font_size: xl
+
+  linear_progress:
+    description: 수평 프로그레스 바
+    used_in: [S2]
+
+  # ------------------------------------------------------------------
+  # 피드백 & 에러
+  # ------------------------------------------------------------------
+  toast:
+    description: 하단 토스트 (2초 자동 소멸)
+    used_in: [S1, S3, S8, S10, S11]
+    auto_dismiss_ms: 2000
+
+  info_card:
+    description: 정보 카드 (구독 상태 등)
+    used_in: [S9]
+
+  illustration:
+    description: 빈 상태 일러스트
+    used_in: [S11]
+
+  warning_icon:
+    description: 경고 아이콘 (⚠️)
+    used_in: [S11]
+
+  banner:
+    description: 상단 배너 (dismissible)
+    used_in: [S1, S11]
+    aria_role: status
+
+# ------------------------------------------------------------------
+# 디자인 토큰 (공통)
+# ------------------------------------------------------------------
+tokens:
+  colors:
+    light:
+      bg: "#FFFFFF"
+      text: "#000000"
+      primary: "blue-500"
+      neutral_200: "#E5E5E5"
+      neutral_900: "#171717"
+      danger: "red-500"
+    dark:
+      bg: "#0F0F0F"
+      text: "#E8E8E8"
+      primary: "blue-400"
+      danger: "red-400"
+  typography:
+    heading: "text-2xl font-bold"
+    body: "text-base"
+    small: "text-sm text-neutral-500"
+    timer_xl: "text-7xl font-light tabular-nums"
+  spacing:
+    base: 4
+    section: 24
+  radius:
+    md: 8
+    lg: 12
+  motion:
+    fade: 300ms
+    transition_default: ease-out
+
+emoji_convention:
+  rest: ["🧘", "⏱️", "💭"]
+  success: ["✓", "✨"]
+  notification: "🔔"
+  error: ["⚠️", "🌐"]
+  user: "👤"
+  clarity_scale: ["☁︎", "☁︎☁︎", "☁︎☀︎", "☀︎☀︎", "☀︎☀︎☀︎"]
+
+dark_mode:
+  auto_schedule: "22:00 ~ 08:00 (user timezone)"
+  persistence: user_preferences.theme
+  night_alert_tone: "22:00 슬롯은 Blue Light 감쇠"
+
+breakpoints:
+  mobile: "<640px (primary)"
+  tablet: "640px ~ 1024px"
+  desktop: ">1024px"
+  strategy: mobile-first PWA

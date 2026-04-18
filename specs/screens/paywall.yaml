@@ -1,0 +1,133 @@
+version: "2.0"
+
+screen:
+  id: S10
+  name: Paywall
+  route: /paywall
+  priority: P0
+  layout: fullscreen-modal
+  purpose: 유료 기능 소개 + 7일 무료 체험 구독 유도
+
+entry_paths:
+  - from: S5
+    trigger: "[프리미엄으로 무제한 저장] 또는 8일 이상 스크롤"
+    source_param: archive_boundary
+  - from: S6
+    trigger: "[월간] 탭 (free 유저)"
+    source_param: weekly_monthly_tab
+  - from: S9
+    trigger: "[업그레이드]"
+    source_param: settings
+
+exit_paths:
+  - to: payment_flow
+    trigger: "[7일 무료 체험 시작]"
+  - to: previous_screen
+    trigger: "[나중에] 또는 뒤로"
+
+data_requirements:
+  - resource: subscriptions
+    needs: [tier, status, trial_ends_at]
+    scope: current_user
+    action: read_then_create_on_subscribe
+
+components:
+  - id: header
+    type: modal_header
+    position: top
+    function: "프리미엄 업그레이드 + 닫기(×) 버튼"
+  - id: tagline
+    type: heading
+    position: main
+    function: "✨ 모든 기능을 활용해보세요"
+  - id: feature_list
+    type: check_list
+    position: main
+    function: 프리미엄 기능 5종 체크리스트
+    items:
+      - "무제한 아카이브"
+      - "음성 녹음 / 사진 첨부"
+      - "CSV / Notion 내보내기"
+      - "멀티 디바이스 동기화"
+      - "월간 리포트 + 그래프"
+  - id: price_card
+    type: pricing_card
+    position: main
+    function: "월/연 가격 + 언제든 해지"
+    plans:
+      - { type: monthly, price_krw: 2900, label: "월 ₩2,900" }
+      - { type: annual, price_krw: 28900, monthly_equivalent: 2408, label: "연 ₩28,900 (월 ₩2,408)" }
+    note: "언제든 해지 가능"
+  - id: trial_cta
+    type: primary_button_large
+    position: bottom
+    function: "[7일 무료 체험 시작]"
+    action: start_trial_then_payment
+  - id: later_button
+    type: tertiary_button
+    position: bottom
+    function: "[나중에]"
+    action: navigate_back
+
+states:
+  - name: default
+    when: tier=free AND no_prior_trial
+  - name: trial_used
+    when: subscriptions.status=expired AND prior_trial=true
+    cta: "[구독 시작] (체험 무료 없음)"
+  - name: already_premium
+    when: tier=premium
+    action: auto_redirect(previous_screen)
+    display: "이미 프리미엄입니다."
+  - name: processing
+    when: payment in-flight
+    display: 버튼 disabled + 스피너
+
+technical:
+  payment_provider: Stripe (primary), IAP (검토)
+  stripe_flow: Supabase Edge Function → Stripe Checkout → webhook → subscriptions 업데이트
+  trial_logic: trial_ends_at=now+7d, 7일 후 자동 결제
+  cancellation: 유저 subs portal에서 즉시 해지 가능
+
+events:
+  - trigger: trial_cta.tap
+    action: [POST /api/stripe/checkout, redirect_to_stripe]
+  - trigger: later_button.tap
+    action: navigate_back(with_source_context)
+  - trigger: checkout_success_webhook
+    action: [update subscriptions.status=trial, navigate(S1) 또는 original_source]
+  - trigger: source=weekly_monthly_tab AND 구독 완료
+    action: navigate(S6) with monthly tab active
+
+tests:
+  - name: Paywall 기본 진입
+    when: free 유저 + S5에서 진입
+    then: [기능 리스트, 가격 카드, 7일 체험 CTA 표시]
+  - name: 체험 시작
+    when: "[7일 무료 체험 시작] 탭 → Stripe 완료"
+    then: [subscriptions.status=trial, trial_ends_at=7d후, 원래 화면 복귀]
+  - name: 이미 premium
+    when: tier=premium 유저가 Paywall 진입
+    then: [즉시 이전 화면 복귀, "이미 프리미엄" 토스트]
+  - name: 나중에
+    when: "[나중에] 탭"
+    then: [이전 화면 복귀, 구독 상태 변경 없음]
+  - name: 결제 실패 복구
+    when: Stripe webhook 실패 수신
+    then: [에러 토스트, 재시도 버튼 활성]
+
+accessibility:
+  aria:
+    trial_cta: "7일 무료 체험 시작, 이후 월 2천9백원 자동 결제"
+    feature_list: "프리미엄 기능 5가지"
+  keyboard: ESC로 닫기, Tab 순서 = [close, cta, later]
+  legal: "언제든 해지 가능" 명시 (한국 전자상거래법)
+
+design_reference:
+  source: stitch
+  project_id: "15346377825100012810"
+  screen_id: "ee9cea3ba76a43b0933c6e1d6b82a7b1"
+  image: "design/screens/paywall.png"
+  html: "design/html/paywall.html"
+  design_system_asset: "740110224819224335"
+  generated_at: "2026-04-17T00:33+09:00"

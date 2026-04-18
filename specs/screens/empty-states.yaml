@@ -1,0 +1,117 @@
+version: "2.0"
+
+screen:
+  id: S11
+  name: 빈상태 & 에러 화면 (3 variants)
+  route: "(variants — inline/overlay)"
+  priority: P1
+  layout: overlay-or-inline
+  purpose: 빈 데이터, 네트워크 에러, 알림 권한 거부 상황의 공통 UX
+
+variants:
+  # ---------------------------------------------------------------
+  - id: empty_archive
+    type: inline_placeholder
+    shown_in: [S5]
+    trigger: rest_sessions count = 0
+    components:
+      - { type: illustration, content: "(빈 이미지 일러스트)" }
+      - { type: heading, content: "아직 기록이 없어요." }
+      - { type: paragraph, content: "첫 쉼을 시작해보세요." }
+      - { type: primary_button, label: "[지금 쉬기 →]", action: "navigate(S2)" }
+    tests:
+      - name: 빈 아카이브 진입
+        when: 신규 유저 S5 진입
+        then: [일러스트 + 안내 + CTA 표시, 세션 카드 미표시]
+      - name: CTA 동작
+        when: "[지금 쉬기] 탭"
+        then: [S2로 이동]
+
+  # ---------------------------------------------------------------
+  - id: network_error
+    type: fullscreen_error
+    shown_in: [any_data_fetch_screen]
+    trigger: network_error OR fetch_timeout
+    data_requirements:
+      - resource: rest_sessions
+        needs: []
+        note: 로컬 Dexie 캐시 존재 여부만 확인; 마지막 동기화 시각은 클라이언트 storage metadata에서 계산
+    components:
+      - { type: icon, content: "🌐" }
+      - { type: heading, content: "오류 발생" }
+      - { type: paragraph, content: "네트워크 연결을 확인해주세요." }
+      - { type: info_row, content: "캐시된 데이터를 표시하고 있습니다. 마지막 동기화: {relative_time}" }
+      - { type: primary_button, label: "[재시도]", action: "retry_fetch" }
+    technical:
+      offline_detection: "navigator.onLine + fetch failure"
+      cache_source: Dexie IndexedDB
+      retry_backoff: 1s → 3s → 10s
+    tests:
+      - name: 오프라인 진입
+        when: navigator.onLine=false + S5 진입
+        then: [캐시된 세션 표시, 상단에 "마지막 동기화" 배너]
+      - name: 재시도 성공
+        when: "[재시도] 탭 + 네트워크 복구"
+        then: [최신 데이터 fetch, 배너 사라짐]
+      - name: 재시도 실패
+        when: "[재시도] 탭 + 여전히 오프라인"
+        then: [토스트 "연결 실패, 계속 재시도 중"]
+
+  # ---------------------------------------------------------------
+  - id: notification_permission_denied
+    type: banner
+    shown_in: [S1]
+    trigger: Notification.permission=denied OR subscription=null
+    components:
+      - { type: warning_icon, content: "⚠️" }
+      - { type: text, content: "알림이 꺼져있어요." }
+      - { type: link_button, label: "[설정에서 켜기]", action: open_system_settings_or_guide }
+      - { type: close_button, label: "[닫기]", action: dismiss_banner_session }
+    technical:
+      persistence: dismiss는 세션 내만 유지, 다음 방문 시 다시 표시
+      action_variants:
+        chrome: chrome://settings/content/notifications 안내
+        safari_ios: PWA 홈화면 추가 + 설정 가이드
+        safari_macos: Safari > Settings > Websites > Notifications
+    tests:
+      - name: 권한 거부 배너 표시
+        when: Notification.permission=denied
+        then: [S1 상단에 경고 배너 표시]
+      - name: 배너 닫기
+        when: "[닫기] 탭"
+        then: [세션 내 dismiss, 새 세션에선 다시 표시]
+      - name: 설정 열기
+        when: "[설정에서 켜기] 탭"
+        then: [플랫폼별 가이드 모달 또는 외부 링크]
+
+# ---------------------------------------------------------------
+# 공통 원칙
+# ---------------------------------------------------------------
+common_principles:
+  - 강박 없음 — 에러/빈상태 UI는 유저를 비난하지 않음
+  - 액션 가능 — 항상 명확한 다음 스텝 제공
+  - 캐시 우선 — 네트워크 실패 시 로컬 데이터 우선 표시
+
+accessibility:
+  illustrations: 장식용은 aria-hidden
+  error_roles: 에러 요소는 role="alert" + aria-live="assertive"
+  banner: role="status" + aria-live="polite"
+
+design_reference:
+  source: stitch
+  project_id: "15346377825100012810"
+  design_system_asset: "740110224819224335"
+  variants_assets:
+    - variant: empty_archive
+      screen_id: "086f89b75c684f359dc15955f8efc850"
+      image: "design/screens/empty-archive.png"
+      html: "design/html/empty-archive.html"
+    - variant: network_error
+      screen_id: "979e165317fc4ad2a31bcd2a675cc773"
+      image: "design/screens/network-error.png"
+      html: "design/html/network-error.html"
+    - variant: notification_permission_denied
+      screen_id: "0c8b5ae3c2dc4d4d929bb3f23a980d3f"
+      image: "design/screens/permission-banner.png"
+      html: "design/html/permission-banner.html"
+  generated_at: "2026-04-17T00:35+09:00"

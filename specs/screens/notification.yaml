@@ -1,0 +1,102 @@
+version: "2.0"
+
+screen:
+  id: S4
+  name: 푸시 알림 (OS 레벨)
+  route: "(os-notification — 앱 내 화면 아님)"
+  priority: P0
+  layout: os-native
+  purpose: 사용자를 의도적으로 쉼으로 유도. 6회 고정 슬롯.
+
+fixed_slots:
+  - time: "08:30"
+    message: "5분 숨 고르고 가요"
+  - time: "10:30"
+    message: "한 번 멈춰서 정리할까요"
+  - time: "13:00"
+    message: "점심 후 몸과 마음 리셋"
+  - time: "15:30"
+    message: "오후 경항 여기까지, 깊게 쉬어봐요"
+  - time: "19:00"
+    message: "일의 끝, 쉼의 시작"
+  - time: "22:00"
+    message: "오늘 하루 천천히 돌아봐요"
+
+data_requirements:
+  - resource: notification_subscriptions
+    needs: [endpoint, keys, platform, snooze_log]
+    scope: current_user
+  - resource: user_preferences
+    needs: [notification_slots, timezone]
+  - resource: rest_sessions
+    needs: [started_at, completed]
+    note: Soft Streak 계산용
+
+platforms:
+  android_chrome:
+    transport: FCM + Web Push API
+    actions: ["지금 쉬기", "15분 뒤", "닫기"]
+    layout: rich
+  ios_safari:
+    transport: APNS (홈화면 추가 필수)
+    requires: ios_16_4_plus + homescreen_install
+    actions: ["자세히", "닫기"]
+    layout: simple
+  desktop:
+    transport: Web Push API
+    actions: ["지금 쉬기", "15분 뒤", "닫기"]
+
+action_behaviors:
+  now_rest:
+    label: "[지금 쉬기]"
+    outcome: open app at S2 with last_used_duration
+  snooze_15:
+    label: "[15분 뒤]"
+    outcome: schedule re-notification at now+15min
+    constraint: per_slot_max=3, after_23:00=auto_ignore
+  dismiss:
+    label: "[닫기]"
+    outcome: silent close (no penalty, no retry)
+
+soft_streak:
+  rule: 하루 3회 이상 완료 → streak 유지, 2회 이하 → 초기화
+  displayed_at: S1
+
+technical:
+  scheduler: Service Worker + server-side cron (Supabase Edge Function)
+  vapid: VAPID 키페어로 서명
+  token_refresh: 토큰 만료 시 자동 갱신
+  snooze_storage: notification_subscriptions.snooze_log (json)
+  night_mode: slot=22:00은 다크모드 톤, Blue Light 감쇠
+  after_23: 스누즈 무시 (수면 방해 방지)
+
+tests:
+  - name: 슬롯 시간 알림 발송
+    when: 08:30 도달 + subscription active
+    then: [푸시 메시지 전송, "5분 숨 고르고 가요" 표시]
+  - name: 스누즈 3회 제한
+    when: 같은 슬롯에서 [15분 뒤] 3회 탭
+    then: [4번째 스누즈는 무시, slot 종료]
+  - name: 23시 이후 스누즈 무시
+    when: 22:00 슬롯 [15분 뒤] → 22:45 시점
+    then: [재알림 발송 안 됨]
+  - name: 지금 쉬기 직행
+    when: "[지금 쉬기] 탭"
+    then: [앱 열림, S2 진입, slot=현재슬롯 기록]
+  - name: iOS PWA 경고
+    when: iOS Safari + 홈화면 미추가
+    then: [권한 요청 실패, 온보딩 가이드 노출]
+
+accessibility:
+  os_native: OS 내장 TTS/스크린리더 사용
+  min_message_length: 12자 이상 (너무 짧으면 불친절)
+
+design_reference:
+  source: stitch
+  project_id: "15346377825100012810"
+  screen_id: "f39499bf05d64679985fde20fe6597d9"
+  image: "design/screens/notification.png"
+  html: "design/html/notification.html"
+  design_system_asset: "740110224819224335"
+  generated_at: "2026-04-17T00:24+09:00"
+  note: "iOS 17 잠금화면 목업 — 실제 화면 아님, 컨셉 시각화용"

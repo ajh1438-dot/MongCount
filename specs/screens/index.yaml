@@ -1,0 +1,87 @@
+version: "2.0"
+project: MongCount
+korean_name: 쉼일지
+total_screens: 11
+
+screens:
+  - id: S1
+    name: 홈 / 대시보드
+    file: home.yaml
+    route: /
+    priority: P0
+    layout: mobile-stack-with-bottom-tabs
+
+  - id: S2
+    name: 쉼 세션 타이머
+    file: rest-timer.yaml
+    route: /rest
+    priority: P0
+    layout: fullscreen-center
+
+  - id: S3
+    name: 집중도 + 한줄 기록
+    file: rest-review.yaml
+    route: /rest/review
+    priority: P0
+    layout: form-center
+
+  - id: S4
+    name: 푸시 알림 (OS 레벨)
+    file: notification.yaml
+    route: "(os-notification)"
+    priority: P0
+    layout: os-native
+
+  - id: S5
+    name: 아카이브 리스트
+    file: archive.yaml
+    route: /archive
+    priority: P1
+    layout: mobile-list-with-bottom-tabs
+
+  - id: S6
+    name: 주간 리포트
+    file: weekly-report.yaml
+    route: /report
+    priority: P1
+    layout: mobile-stack-with-bottom-tabs
+
+  - id: S7
+    name: 온보딩 (3 스크린)
+    file: onboarding.yaml
+    route: /onboarding
+    priority: P0
+    layout: fullscreen-paginated
+
+  - id: S8
+    name: 로그인
+    file: login.yaml
+    route: /login
+    priority: P1
+    layout: fullscreen-center
+
+  - id: S9
+    name: 설정
+    file: settings.yaml
+    route: /settings
+    priority: P1
+    layout: mobile-stack-with-bottom-tabs
+
+  - id: S10
+    name: Paywall
+    file: paywall.yaml
+    route: /paywall
+    priority: P0
+    layout: fullscreen-modal
+
+  - id: S11
+    name: 빈상태 & 에러
+    file: empty-states.yaml
+    route: "(variants)"
+    priority: P1
+    layout: overlay-or-inline
+
+tab_navigation:
+  position: bottom-fixed
+  tabs: [home, archive, report, settings]
+  visible_on: [S1, S5, S6, S9]

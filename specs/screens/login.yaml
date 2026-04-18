@@ -1,0 +1,122 @@
+version: "2.0"
+
+screen:
+  id: S8
+  name: 로그인
+  route: /login
+  priority: P1
+  layout: fullscreen-center
+  purpose: 클라우드 동기화 활성화 (선택사항, 건너뛰기 허용)
+
+entry_paths:
+  - from: S7-3
+    trigger: "[시작하기]"
+  - from: S9
+    trigger: "[로그인]"
+  - from: S10
+    trigger: "결제 완료 시 로그인 필요"
+
+exit_paths:
+  - to: S1
+    trigger: "[Google 로그인] OAuth 성공"
+  - to: S1
+    trigger: "[Kakao 로그인] OAuth 성공"
+  - to: S1
+    trigger: "[나중에]"
+    note: local_only 유저로 사용
+
+data_requirements:
+  - resource: users
+    needs: [id, email, provider]
+    action: upsert_on_oauth_success
+  - resource: user_preferences
+    needs: [onboarding_completed]
+    action: migrate_local_to_cloud
+
+components:
+  - id: heading
+    type: heading
+    position: top
+    function: "계정 연결"
+  - id: description
+    type: paragraph
+    position: main
+    function: "클라우드 동기화를 켜면 모든 기기에서 기록을 볼 수 있어요."
+  - id: google_button
+    type: oauth_button
+    position: main
+    function: "[Google로 로그인]"
+    provider: google
+    action: supabase.auth.signInWithOAuth(google)
+  - id: kakao_button
+    type: oauth_button
+    position: main
+    function: "[Kakao로 로그인]"
+    provider: kakao
+    action: supabase.auth.signInWithOAuth(kakao)
+  - id: divider
+    type: divider
+    position: main
+  - id: later_button
+    type: tertiary_button
+    position: bottom
+    function: "[나중에] — local_only 유저로 계속 사용"
+    action: navigate(S1)
+
+states:
+  - name: default
+    when: 미인증
+  - name: authenticating
+    when: OAuth redirect in-flight
+    display: "로딩 스피너 + '로그인 중...'"
+  - name: auth_error
+    when: OAuth 실패
+    display: 에러 토스트 + 재시도 버튼
+
+technical:
+  auth_provider: Supabase Auth
+  google_oauth: 기본 제공 (Supabase Dashboard 설정)
+  kakao_oauth: Supabase Edge Function (커스텀 provider)
+  callback_url: "https://mongcount.app/auth/callback"
+  session_migration: 로컬 rest_sessions를 user_id에 바인딩 후 upload
+  pkce: enabled
+
+events:
+  - trigger: google_button.tap
+    action: supabase.auth.signInWithOAuth({ provider: google, redirectTo: callback_url })
+  - trigger: kakao_button.tap
+    action: supabase.auth.signInWithOAuth({ provider: kakao, redirectTo: callback_url })
+  - trigger: later_button.tap
+    action: navigate(S1)
+  - trigger: auth_callback_success
+    action: [upload_local_sessions(), navigate(S1)]
+
+tests:
+  - name: Google 로그인 성공
+    when: Google OAuth 완료
+    then: [users 레코드 생성/업데이트, 로컬 세션 업로드, S1 이동]
+  - name: 건너뛰기
+    when: "[나중에] 탭"
+    then: [S1 이동, users.provider=local_only]
+  - name: OAuth 실패 복구
+    when: OAuth 에러 반환
+    then: [에러 토스트, 다시 버튼 활성]
+  - name: 세션 마이그레이션
+    when: 로컬 세션 10개 존재 상태에서 로그인
+    then: [모든 세션이 user_id=newUser로 업로드]
+
+accessibility:
+  aria:
+    google_button: "Google 계정으로 로그인"
+    kakao_button: "카카오 계정으로 로그인"
+    later_button: "로그인하지 않고 계속"
+  keyboard: Tab 순서 = [google, kakao, later]
+
+design_reference:
+  source: stitch
+  project_id: "15346377825100012810"
+  screen_id: "a169a818991e4b0194d5e37ae199febb"
+  image: "design/screens/login.png"
+  html: "design/html/login.html"
+  design_system_asset: "740110224819224335"
+  generated_at: "2026-04-17T00:30+09:00"

@@ -1,0 +1,167 @@
+version: "2.0"
+
+screen:
+  id: S9
+  name: 설정
+  route: /settings
+  priority: P1
+  layout: mobile-stack-with-bottom-tabs
+  purpose: 알림 토글, 다크모드, 계정, 업그레이드 등 사용자 설정
+
+entry_paths:
+  - from: S1
+    trigger: 하단탭 [설정] 또는 상단 설정 아이콘
+
+exit_paths:
+  - to: S1
+    trigger: 하단탭 [홈]
+  - to: S8
+    trigger: "[로그인] (미인증 시)"
+  - to: S10
+    trigger: "[업그레이드]"
+  - to: S7
+    trigger: "[온보딩 다시 보기]"
+
+data_requirements:
+  - resource: user_preferences
+    needs: [notification_slots, theme]
+    action: read_write
+  - resource: users
+    needs: [email, provider]
+    action: read
+  - resource: subscriptions
+    needs: [tier, status]
+    action: read
+  - resource: notification_subscriptions
+    needs: [platform]
+    note: 권한 상태 표시용
+
+sections:
+  - id: notifications
+    title: "알림"
+    components:
+      - id: slot_toggles
+        type: toggle_list
+        function: "6개 슬롯 각각 ON/OFF"
+        items:
+          - { slot: "08:30", label: "5분 숨 고르고..." }
+          - { slot: "10:30", label: "한 번 멈춰서..." }
+          - { slot: "13:00", label: "점심 후..." }
+          - { slot: "15:30", label: "오후 경항..." }
+          - { slot: "19:00", label: "일의 끝..." }
+          - { slot: "22:00", label: "오늘 하루..." }
+        data_source: { resource: user_preferences, field: notification_slots }
+
+  - id: display
+    title: "디스플레이"
+    components:
+      - id: theme_radio
+        type: radio_group
+        function: "System / Light / Dark 선택"
+        options: [system, light, dark]
+        data_source: { resource: user_preferences, field: theme }
+
+  - id: account
+    title: "계정"
+    components:
+      - id: email_row
+        type: text_row
+        function: "이메일: {email}"
+        visible_when: provider != local_only
+      - id: login_button
+        type: secondary_button
+        function: "[로그인]"
+        visible_when: provider=local_only
+        action: navigate(S8)
+      - id: logout_button
+        type: tertiary_button
+        function: "[로그아웃]"
+        visible_when: provider != local_only
+      - id: delete_account_button
+        type: danger_button
+        function: "[계정 삭제]"
+        visible_when: provider != local_only
+        confirm_required: true
+
+  - id: upgrade
+    title: ""
+    components:
+      - id: upgrade_card
+        type: card_cta
+        function: "[업그레이드] — 프리미엄 기능 안내"
+        visible_when: tier=free
+        action: navigate(S10)
+      - id: subscription_status
+        type: info_card
+        function: "프리미엄 {plan}, 다음 결제 {date}"
+        visible_when: tier=premium
+
+  - id: misc
+    title: "기타"
+    components:
+      - { type: link_row, label: "[피드백 보내기]", action: mailto_or_form }
+      - { type: link_row, label: "[개인정보 정책]", action: external_link }
+      - { type: link_row, label: "[이용약관]", action: external_link }
+      - { type: link_row, label: "[온보딩 다시 보기]", action: navigate(S7) }
+      - { type: text_row, content: "MongCount v1.0.0" }
+
+states:
+  - name: authenticated
+    when: provider != local_only
+    show: [account rows, logout, delete_account]
+  - name: local_only
+    when: provider=local_only
+    show: [login button 우선]
+  - name: notification_denied
+    when: Notification.permission=denied
+    display: 상단 경고 배너 + "[설정에서 브라우저 권한 열기]"
+
+technical:
+  theme_apply: "CSS variable switch + localStorage persist"
+  slot_save: 토글 즉시 user_preferences 업데이트 (optimistic)
+  logout: "signOut() → clear local session → maintain rest_sessions in IndexedDB"
+  delete_account: "확인 다이얼로그 → Supabase RPC → cascade delete → local clear → S7로 이동"
+
+events:
+  - trigger: slot_toggle.change
+    action: update(user_preferences.notification_slots[slot])
+  - trigger: theme_radio.change
+    action: [update(user_preferences.theme), apply_css_variables]
+  - trigger: logout_button.tap
+    action: confirm → supabase.auth.signOut() → local_only 모드 전환
+  - trigger: delete_account_button.tap
+    action: double_confirm → cascade_delete → navigate(S7)
+  - trigger: upgrade_card.tap
+    action: navigate(S10, { source: settings })
+
+tests:
+  - name: 슬롯 토글 저장
+    when: 08:30 토글 OFF
+    then: [user_preferences.notification_slots["08:30"]=false, 해당 시간 알림 미발송]
+  - name: 다크모드 선택
+    when: theme_radio → dark
+    then: [CSS 변수 전환, localStorage 저장, 재실행 시 유지]
+  - name: 로그아웃
+    when: 로그아웃 확인
+    then: [auth session 제거, rest_sessions 로컬 유지, 상태 local_only로 전환]
+  - name: 계정 삭제
+    when: 이중 확인 후 삭제
+    then: [Supabase 데이터 cascade delete, 로컬 clear, S7로 이동]
+  - name: 프리미엄 상태 표시
+    when: tier=premium
+    then: [upgrade_card 숨김, subscription_status 노출, 다음 결제일 표시]
+
+accessibility:
+  aria:
+    slot_toggles: "알림 {slot} 활성화 상태: {on|off}"
+    theme_radio: "다크모드 선택: System, Light, Dark"
+  keyboard: 섹션 단위 Tab 그룹핑
+
+design_reference:
+  source: stitch
+  project_id: "15346377825100012810"
+  screen_id: "bada53326d51434ab8b608c30fddc168"
+  image: "design/screens/settings.png"
+  html: "design/html/settings.html"
+  design_system_asset: "740110224819224335"
+  generated_at: "2026-04-17T00:32+09:00"
