@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MongCount · 쉼일지",
-  description: "쉬어야 일이 잘 풀려. 의도된 쉼을 기록하는 MongCount.",
+  description: "멍때리기는 뇌를 위한 운동이에요. 하루 몇 분, 기록하면 달라져요.",
   manifest: "/manifest.json",
 };
 

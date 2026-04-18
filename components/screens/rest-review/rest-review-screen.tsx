@@ -91,8 +91,8 @@ export function RestReviewScreen({
     return emojis[clarity - 1] ?? emojis[DEFAULT_CLARITY - 1];
   }, [clarity]);
   const durationLabel = `${durationMinutes}분`;
-  const heading = fromAbort ? `${durationLabel} 쉼, 여기까지 했어요` : `${durationLabel} 쉼을 마쳤어요 ✓`;
-  const subcopy = fromAbort ? "느낌만 가볍게 남기고 돌아가요." : "방금 쉼이 어땠는지 짧게 남겨보세요.";
+  const heading = fromAbort ? `${durationLabel} 멍때림, 여기까지` : `${durationLabel} 멍때렸어요 ✓`;
+  const subcopy = fromAbort ? "느낌만 가볍게 남기고 돌아가요." : "방금 멍이 어땠는지 짧게 남겨보세요.";
 
   useEffect(() => {
     if (noteDebounceRef.current !== null) {
@@ -195,12 +195,12 @@ export function RestReviewScreen({
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-between px-6 pb-10 pt-10">
       <section className="space-y-8">
         <header className="space-y-3 text-center">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted">쉼 기록</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted">멍때림 기록</p>
           <h1 className="text-3xl font-semibold tracking-tight">{heading}</h1>
           <p className="text-sm text-muted">{subcopy}</p>
           {fromAbort ? (
             <p className="text-sm text-muted" data-testid="rest-review-aborted-state">
-              중단한 쉼도 기록으로 남길 수 있어요.
+              중단한 멍때림도 기록으로 남길 수 있어요.
             </p>
           ) : null}
         </header>
@@ -208,7 +208,7 @@ export function RestReviewScreen({
         <section className="space-y-4 rounded-[24px] border bg-surface p-5 shadow-sm">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-base font-medium">머리가 얼마나 맑나요?</p>
+              <p className="text-base font-medium">머리가 좀 풀렸나요?</p>
               <p className="mt-1 text-sm text-muted">1~5 중에 지금의 느낌을 골라보세요.</p>
             </div>
             <p className="text-2xl" aria-live="polite" data-testid="rest-review-emoji">
@@ -290,7 +290,7 @@ export function RestReviewScreen({
             id="rest-review-note"
             maxLength={NOTE_MAX_LENGTH}
             onChange={(event) => setNote(event.currentTarget.value)}
-            placeholder="떠오른 생각이 있다면 짧게 남겨보세요."
+            placeholder="뭐가 보였어요? 아무것도 안 봐도 괜찮아요."
             value={note}
           />
           <div className="flex items-center justify-between text-xs text-muted">

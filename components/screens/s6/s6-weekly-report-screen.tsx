@@ -106,19 +106,19 @@ function buildAiComment(options: {
   const { totalSessions, completedDays, avgClarity } = options;
 
   if (totalSessions === 0) {
-    return "이번 주 기록이 아직 없어요. 첫 쉼을 시작해보세요.";
+    return "이번 주 기록이 아직 없어요. 첫 멍때림을 시작해보세요.";
   }
 
   if (completedDays >= 5) {
-    return "이번 주는 꾸준히 쉼을 챙기고 있어요. 지금의 리듬을 이어가 보세요.";
+    return "이번 주는 꾸준히 멍때리고 있어요. 지금의 리듬을 이어가 보세요.";
   }
 
   if ((avgClarity ?? 0) >= 4) {
-    return "맑았던 순간이 분명 있었어요. 그 시간대를 다음 쉼의 기준으로 삼아보세요.";
+    return "맑았던 순간이 분명 있었어요. 그 시간대를 다음 멍때림의 기준으로 삼아보세요.";
   }
 
   if (completedDays >= 1) {
-    return "쉼의 흐름이 조금씩 쌓이고 있어요. 짧게라도 한 번 더 이어가 볼까요?";
+    return "멍때림의 흐름이 조금씩 쌓이고 있어요. 짧게라도 한 번 더 이어가 볼까요?";
   }
 
   return "이번 주 기록을 바탕으로 리포트가 차분히 채워지고 있어요.";
@@ -236,7 +236,7 @@ export function S6WeeklyReportScreen({
         </InfoCard>
       ) : null}
 
-      <InfoCard title={model.weekRangeLabel} description="이번 주의 쉼 흐름을 차분하게 돌아봐요.">
+      <InfoCard title={model.weekRangeLabel} description="이번 주 멍때린 흐름을 돌아봐요.">
         <div className="space-y-5">
           <div className="space-y-3" aria-label="주간 도트 요약">
             <div className="grid grid-cols-7 gap-2 text-center text-xs text-muted" aria-hidden="true">

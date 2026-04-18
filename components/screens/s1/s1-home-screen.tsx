@@ -81,7 +81,7 @@ export function S1HomeScreen({
   const effectiveCount = Math.max(0, Math.min(completedCount, targetCount));
   const firstLaunch = effectiveCount === 0 && softStreakDays === 0;
 
-  const nextSlotText = nextSlotTime && nextSlotInMinutes !== null ? `다음 쉼 ${nextSlotTime} · ${nextSlotLabel(nextSlotInMinutes)}` : "오늘 쉼을 모두 완료했어요 ✨";
+  const nextSlotText = nextSlotTime && nextSlotInMinutes !== null ? `다음 멍때림 ${nextSlotTime} · ${nextSlotLabel(nextSlotInMinutes)}` : "오늘 멍때리기 완료 ✨";
   const notification = notificationOverride ?? (typeof window !== "undefined" ? window.Notification : undefined);
   const isNotificationDenied = notification?.permission === "denied";
 
@@ -148,7 +148,7 @@ export function S1HomeScreen({
         </div>
 
         <div className="space-y-1">
-          {firstLaunch ? <p className="text-sm text-muted">오늘의 첫 쉼을 시작해보세요</p> : null}
+          {firstLaunch ? <p className="text-sm text-muted">오늘 아직 안 멍때렸어요</p> : null}
         </div>
       </header>
 
@@ -159,7 +159,7 @@ export function S1HomeScreen({
         >
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1.5">
-              <p className="text-sm text-muted">오늘의 진행</p>
+              <p className="text-sm text-muted">오늘의 멍때림</p>
               <p className="text-2xl font-semibold tracking-tight">
                 오늘 {effectiveCount}/{targetCount}
               </p>
@@ -195,21 +195,21 @@ export function S1HomeScreen({
           <Button
             variant="primaryLarge"
             fullWidth
-            aria-label="지금 쉼 시작하기"
+            aria-label="지금 멍때리기"
             className="min-h-[140px] rounded-[28px] text-xl mc-float"
             onClick={() => {
               setLastUsedDuration(selectedDuration);
               router.push(`/rest?duration=${selectedDuration}`);
             }}
           >
-            지금 {selectedDuration}분 쉬기
+            지금 {selectedDuration}분 멍때리기
           </Button>
         </div>
       </div>
 
       {lastSession ? (
         <p className="pb-1 text-center text-sm text-muted mc-fade-in-3">
-          마지막 쉼: {lastSession.relativeTime}
+          마지막 멍때림: {lastSession.relativeTime}
         </p>
       ) : null}
     </section>

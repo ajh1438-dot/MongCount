@@ -16,7 +16,7 @@ export function EmptyArchiveState({ startHref = "/rest?duration=3" }: EmptyArchi
   return (
     <InfoCard
       title="아직 기록이 없어요."
-      description="첫 쉼을 시작해보세요."
+      description="첫 멍때림을 시작해보세요."
       className="rounded-[24px] text-center"
       data-testid="empty-archive-state"
     >
@@ -28,7 +28,7 @@ export function EmptyArchiveState({ startHref = "/rest?duration=3" }: EmptyArchi
           href={startHref}
           className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
         >
-          지금 쉬기 →
+          지금 멍때리기 →
         </Link>
       </div>
     </InfoCard>

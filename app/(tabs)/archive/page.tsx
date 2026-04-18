@@ -192,7 +192,7 @@ export default function ArchivePage() {
           </div>
         </div>
 
-        <p className="text-sm text-muted">최근 7일 쉼 기록을 날짜별로 조용히 돌아보세요.</p>
+        <p className="text-sm text-muted">최근 7일 멍때린 기록을 돌아보세요.</p>
 
         {searchOpen ? (
           <label className="block rounded-xl border bg-surface px-4 py-3 text-sm text-muted">
@@ -317,7 +317,7 @@ export default function ArchivePage() {
             {olderSessionCount > 0 ? (
               <p className="text-sm text-muted">8일 이전 기록 {olderSessionCount}건은 프리미엄에서 이어서 볼 수 있어요.</p>
             ) : (
-              <p className="text-sm text-muted">모든 쉼 기록을 더 오래 간직하고 싶다면, 프리미엄을 열어보세요.</p>
+              <p className="text-sm text-muted">멍때림 기록을 더 오래 간직하고 싶다면, 프리미엄을 열어보세요.</p>
             )}
             <Link
               href="/paywall?source=archive_boundary"

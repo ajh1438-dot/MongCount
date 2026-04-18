@@ -199,22 +199,22 @@ export function S7OnboardingScreen({
               className="text-3xl font-semibold tracking-tight outline-none"
             >
               {viewState === 1
-                ? "쉴 때 비로소 보이는 것들이 있어요."
+                ? "멍때리면 뇌가 정리돼요. 운동이 몸을 풀듯, 멍이 머리를 풀어줘요."
                 : viewState === 2
-                  ? "하루 6번, 5분씩. 쉬는 시간 알림 드릴게요."
+                  ? "하루 6번, 멍때릴 시간을 알려드릴게요."
                   : viewState === "ios_guide"
                     ? "iPhone에서 알림을 받으려면..."
-                    : "언제든 '지금 3분 쉬기' 버튼이 있어요."}
+                    : "언제든 '지금 3분 멍때리기' 버튼이 있어요."}
             </h1>
 
             {viewState === 1 ? (
               <>
                 <p className="text-sm leading-6 text-muted">
-                  멈출 때 비로소 보이는 것들이 있어요. 잠깐 비우면 머릿속이 차분해져요.
+                  아무 생각 안 해도 뇌는 일하고 있어요. 나뭇잎을 보든, 벽을 보든, 그냥 멍하니 있기만 해도요.
                 </p>
                 <div className="rounded-xl bg-background p-5 text-left">
-                  <p className="text-sm font-medium text-foreground">많은 연구가 쉼의 효과를 확인하고 있어요</p>
-                  <p className="mt-1 text-sm text-muted">조용히 쉴수록 맑아진다고 해요</p>
+                  <p className="text-sm font-medium text-foreground">디폴트 모드 네트워크 — 멍때릴 때 활성화되는 뇌 영역이 창의성과 문제 해결을 담당해요.</p>
+                  <p className="mt-1 text-sm text-muted">자주 멍때리는 사람이 더 잘 풀어요. 진짜로요.</p>
                 </div>
               </>
             ) : null}
@@ -225,7 +225,7 @@ export function S7OnboardingScreen({
                   {slotText}
                 </div>
                 <p className="text-sm leading-6 text-muted">
-                  알림을 켜면 쉼 시간을 놓치지 않아요. 건너뛰어도 괜찮아요.
+                  알림을 켜면 멍때릴 시간을 놓치지 않아요. 건너뛰어도 괜찮아요.
                 </p>
               </>
             ) : null}
@@ -243,14 +243,14 @@ export function S7OnboardingScreen({
             {viewState === 3 ? (
               <>
                 <p className="text-sm leading-6 text-muted">
-                  쉼 시간(3·5·10분)을 선택하고, 침묵 속에서 명확함을 찾아보세요.
+                  시간 정하고, 멍때리고, 어땠는지 남겨보세요. 그게 다예요.
                 </p>
                 <div className="rounded-xl bg-background px-5 py-5 text-left">
-                  <p className="text-sm font-medium">쉼은:</p>
+                  <p className="text-sm font-medium">멍때리기는:</p>
                   <ul className="mt-3 space-y-2 text-sm text-muted">
-                    <li>· 일을 잘하기 위한 멈춤</li>
-                    <li>· 자유롭고 부드러운 시간</li>
-                    <li>· 기록으로 알아가는 나</li>
+                    <li>· 뇌를 위한 스트레칭</li>
+                    <li>· 아무것도 안 해도 되는 시간</li>
+                    <li>· 기록하면 습관이 되는 것</li>
                   </ul>
                 </div>
               </>

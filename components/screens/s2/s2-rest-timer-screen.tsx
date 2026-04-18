@@ -197,12 +197,12 @@ export function S2RestTimerScreen({ durationMinutes, mode }: S2RestTimerScreenPr
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center px-6 py-10">
       <section className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted">쉼 세션</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted">멍때리는 중</p>
         <p className="text-8xl font-light tracking-wider tabular-nums" aria-live="polite" data-testid="timer-display">
           {formatTimer(mode === "readonly" ? totalSeconds : remainingSeconds)}
         </p>
         <div className="w-full space-y-3 pt-2">
-          <p className="text-sm text-muted">생각이 떠오르면, 쉼이 끝나고 기록해요</p>
+          <p className="text-sm text-muted">생각이 떠오르면 흘려보내세요. 끝나고 적으면 돼요.</p>
           <div className="h-1 w-full rounded-full bg-muted/20" aria-hidden="true">
             <div
               className="h-full rounded-full bg-foreground/70 transition-[width] duration-300"
@@ -215,7 +215,7 @@ export function S2RestTimerScreen({ durationMinutes, mode }: S2RestTimerScreenPr
 
       <section className="space-y-3">
         <p className="text-center text-sm text-muted" data-testid="rest-duration">
-          {durationMinutes}분 쉼
+          {durationMinutes}분 멍때림
         </p>
 
         {mode === "readonly" ? (
@@ -238,15 +238,15 @@ export function S2RestTimerScreen({ durationMinutes, mode }: S2RestTimerScreenPr
                 data-testid="abort-confirm-card"
               >
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">지금 쉼을 마칠까요?</p>
-                  <p className="text-sm text-muted">조금 더 쉬어도 좋아요. 멈추면 여기까지 기록돼요.</p>
+                  <p className="text-sm font-medium text-foreground">멍 그만때릴까요?</p>
+                  <p className="text-sm text-muted">조금 더 있어도 돼요. 그만하면 여기까지 기록돼요.</p>
                 </div>
                 <div className="space-y-2">
                   <Button fullWidth variant="secondary" onClick={handleContinueRest}>
-                    계속 쉬기
+                    계속 멍때리기
                   </Button>
                   <Button fullWidth onClick={handleAbortConfirm}>
-                    중단하고 기록하기
+                    여기까지 하고 기록
                   </Button>
                 </div>
               </section>
@@ -256,7 +256,7 @@ export function S2RestTimerScreen({ durationMinutes, mode }: S2RestTimerScreenPr
               className="inline-flex min-h-11 w-full items-center justify-center rounded-lg px-2 text-sm text-muted underline underline-offset-4 transition-colors hover:text-foreground"
               onClick={handleAbortRequest}
             >
-              쉼 중단
+              멍때림 중단
             </button>
           </div>
         )}

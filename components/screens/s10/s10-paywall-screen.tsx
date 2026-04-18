@@ -3,7 +3,7 @@ import Link from "next/link";
 import { InfoCard } from "@/components/ui/info-card";
 
 const OUTCOMES = [
-  "기록을 7일 이상 보관하세요",
+  "멍때림 기록을 7일 이상 보관하세요",
   "월간 패턴을 한 번에 보세요",
   "기기를 바꿔도 이어보세요",
   "음성·사진으로 더 풍부하게 남기세요",
@@ -16,12 +16,12 @@ interface S10PaywallScreenProps {
 
 const SOURCE_COPY: Record<string, { headline: string; sub: string }> = {
   archive_boundary: {
-    headline: "기록을 더 오래 보관하세요",
+    headline: "멍때림 기록을 더 오래 간직하세요",
     sub: "프리미엄에서 7일 이상의 아카이브를 자유롭게 돌아보세요",
   },
   weekly_monthly_tab: {
     headline: "월간 패턴을 한 번에 보세요",
-    sub: "주간을 넘어 월간 단위로 쉼의 흐름을 살펴보세요",
+    sub: "주간을 넘어 월간 단위로 멍때림의 흐름을 살펴보세요",
   },
   settings: {
     headline: "모든 기기를 이어 보세요",
@@ -31,7 +31,7 @@ const SOURCE_COPY: Record<string, { headline: string; sub: string }> = {
 
 const DEFAULT_COPY = {
   headline: "프리미엄 업그레이드",
-  sub: "더 깊은 쉼의 기록을 시작하세요",
+  sub: "멍때리기 습관, 더 오래 기록하세요",
 };
 
 function getLaterHref(source?: string) {

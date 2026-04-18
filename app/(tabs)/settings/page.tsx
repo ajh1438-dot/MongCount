@@ -42,7 +42,7 @@ export default async function SettingsPage({
       <header className="mb-6 space-y-1">
         <p className="text-xs uppercase tracking-[0.2em] text-muted">쉼일지</p>
         <h1 className="text-3xl font-semibold tracking-tight">설정</h1>
-        <p className="text-sm text-muted">알림, 화면, 계정, 업그레이드를 차분하게 관리해요.</p>
+        <p className="text-sm text-muted">알림, 화면, 계정을 관리해요.</p>
       </header>
 
       <section className="space-y-6">
