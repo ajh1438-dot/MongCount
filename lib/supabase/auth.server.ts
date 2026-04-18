@@ -66,22 +66,28 @@ export async function isLocalOnlyUser() {
 }
 
 export async function resolveEntryUser() {
-  const user = await getCurrentUserProfile();
+  try {
+    const user = await getCurrentUserProfile();
 
-  if (user) {
-    await clearLocalOnlyUser();
-    return user;
+    if (user) {
+      try { await clearLocalOnlyUser(); } catch {}
+      return user;
+    }
+  } catch {
+    // auth state may be corrupted — fall through to local-only check
   }
 
-  if (await isLocalOnlyUser()) {
-    return {
-      id: "local-only",
-      email: null,
-      display_name: null,
-      provider: "local_only" as const,
-      created_at: new Date(0).toISOString(),
-    };
-  }
+  try {
+    if (await isLocalOnlyUser()) {
+      return {
+        id: "local-only",
+        email: null,
+        display_name: null,
+        provider: "local_only" as const,
+        created_at: new Date(0).toISOString(),
+      };
+    }
+  } catch {}
 
   return null;
 }
