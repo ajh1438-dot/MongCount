@@ -2,7 +2,10 @@
 
 import { useSyncExternalStore } from "react";
 
-export type DurationPreset = 3 | 5 | 10;
+export type DurationPreset = number;
+
+const MIN_DURATION = 1;
+const MAX_DURATION = 20;
 
 export interface TodayProgressState {
   completedCount: number;
@@ -23,7 +26,7 @@ interface S1HomeState {
   lastUsedDuration: DurationPreset;
 }
 
-const DURATION_PRESETS: DurationPreset[] = [3, 5, 10];
+const DURATION_PRESETS: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 const TODAY_PROGRESS_STORAGE_KEY = "mongcount.s1.todayProgress";
 const LAST_SESSION_STORAGE_KEY = "mongcount.s1.lastSession";
 const LAST_USED_DURATION_STORAGE_KEY = "mongcount.s1.lastUsedDuration";
@@ -51,7 +54,7 @@ function emitChange() {
 }
 
 function isDurationPreset(value: unknown): value is DurationPreset {
-  return typeof value === "number" && DURATION_PRESETS.includes(value as DurationPreset);
+  return typeof value === "number" && Number.isInteger(value) && value >= MIN_DURATION && value <= MAX_DURATION;
 }
 
 function clampInt(value: unknown, fallback: number) {

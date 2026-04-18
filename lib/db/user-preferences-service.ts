@@ -5,12 +5,12 @@ export const LOCAL_ONLY_USER_ID_STORAGE_KEY = "mongcount.local_only_user_id";
 const FALLBACK_TIMEZONE = "Asia/Seoul";
 
 export const DEFAULT_SLOT_CONFIGS: readonly NotificationSlotConfig[] = [
-  { id: "default-0", time: "08:30", label: "출근 직후, 3분만 쉬었다가 시작해요" },
-  { id: "default-1", time: "10:30", label: "오전 중반, 잠깐 멈추고 숨 고르기" },
-  { id: "default-2", time: "13:00", label: "점심 후 머리를 비우는 시간" },
-  { id: "default-3", time: "15:30", label: "오후 집중이 흐려질 때 환기" },
-  { id: "default-4", time: "19:00", label: "퇴근 후 하루를 내려놓는 쉼" },
-  { id: "default-5", time: "22:00", label: "잠들기 전, 오늘을 조용히 마무리" },
+  { id: "default-0", time: "08:30", label: "출근 직후, 3분만 쉬었다가 시작해요", duration: 3 },
+  { id: "default-1", time: "10:30", label: "오전 중반, 잠깐 멈추고 숨 고르기", duration: 3 },
+  { id: "default-2", time: "13:00", label: "점심 후 머리를 비우는 시간", duration: 10 },
+  { id: "default-3", time: "15:30", label: "오후 집중이 흐려질 때 환기", duration: 5 },
+  { id: "default-4", time: "19:00", label: "퇴근 후 하루를 내려놓는 쉼", duration: 5 },
+  { id: "default-5", time: "22:00", label: "잠들기 전, 오늘을 조용히 마무리", duration: 3 },
 ];
 
 type LocalStorageLike = Pick<Storage, "getItem" | "setItem">;

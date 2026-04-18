@@ -113,20 +113,20 @@ export default async function SettingsPage({
         </InfoCard>
 
         <InfoCard title="기타">
-          <div className="flex flex-col gap-1 text-sm">
-            <a href="mailto:feedback@mongcount.app" className="inline-flex min-h-11 items-center underline underline-offset-4">
+          <div className="flex flex-col gap-0 text-sm">
+            <a href="mailto:feedback@mongcount.app" className="inline-flex min-h-9 items-center underline underline-offset-4">
               피드백 보내기
             </a>
-            <Link href="/settings/privacy" className="inline-flex min-h-11 items-center underline underline-offset-4">
+            <Link href="/settings/privacy" className="inline-flex min-h-9 items-center underline underline-offset-4">
               개인정보 정책
             </Link>
-            <Link href="/settings/terms" className="inline-flex min-h-11 items-center underline underline-offset-4">
+            <Link href="/settings/terms" className="inline-flex min-h-9 items-center underline underline-offset-4">
               이용약관
             </Link>
-            <Link href="/onboarding" className="inline-flex min-h-11 items-center underline underline-offset-4">
+            <Link href="/onboarding" className="inline-flex min-h-9 items-center underline underline-offset-4">
               온보딩 다시 보기
             </Link>
-            <p className="text-muted">쉼일지 v1.0.0</p>
+            <p className="mt-1 text-muted">쉼일지 v1.0.0</p>
           </div>
         </InfoCard>
       </section>

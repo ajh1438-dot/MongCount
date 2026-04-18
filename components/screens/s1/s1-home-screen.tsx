@@ -10,8 +10,8 @@ import { setLastUsedDuration, type DurationPreset } from "@/stores/s1-home-store
 
 type NotificationLike = { permission: NotificationPermission };
 
-const DURATION_OPTIONS: DurationPreset[] = [3, 5, 10];
-const ALL_DURATIONS = [1, 2, 3, 5, 7, 10, 15, 20] as const;
+const MIN_DURATION = 1;
+const MAX_DURATION = 20;
 
 export interface S1HomeScreenProps {
   displayName?: string | null;
@@ -170,35 +170,33 @@ export function S1HomeScreen({
         </article>
 
         <div className="mc-fade-in-2 flex items-stretch gap-3">
-          <div
-            className="flex flex-col gap-1 overflow-y-auto rounded-[24px] border bg-surface p-2 shadow-sm"
-            role="radiogroup"
-            aria-label="쉬는 시간 선택"
-            style={{ maxHeight: "160px" }}
-          >
-            {ALL_DURATIONS.map((d) => (
-              <button
-                key={d}
-                type="button"
-                role="radio"
-                aria-checked={selectedDuration === d}
-                onClick={() => setSelectedDuration(d as DurationPreset)}
-                className={`shrink-0 rounded-xl px-3 py-2 text-sm font-medium tabular-nums transition-all duration-200 ${
-                  selectedDuration === d
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted hover:bg-muted/10 hover:text-foreground"
-                }`}
-              >
-                {d}분
-              </button>
-            ))}
+          <div className="flex flex-col items-center justify-center gap-1 rounded-[24px] border bg-surface px-3 py-3 shadow-sm">
+            <button
+              type="button"
+              aria-label="시간 늘리기"
+              disabled={selectedDuration >= MAX_DURATION}
+              onClick={() => setSelectedDuration(Math.min(MAX_DURATION, selectedDuration + 1))}
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-muted transition-colors hover:bg-muted/10 hover:text-foreground disabled:opacity-30"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+            </button>
+            <span className="text-2xl font-semibold tabular-nums" aria-live="polite">{selectedDuration}<span className="text-base font-normal text-muted">분</span></span>
+            <button
+              type="button"
+              aria-label="시간 줄이기"
+              disabled={selectedDuration <= MIN_DURATION}
+              onClick={() => setSelectedDuration(Math.max(MIN_DURATION, selectedDuration - 1))}
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-muted transition-colors hover:bg-muted/10 hover:text-foreground disabled:opacity-30"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
           </div>
 
           <Button
             variant="primaryLarge"
             fullWidth
             aria-label="지금 쉼 시작하기"
-            className="min-h-[160px] rounded-[28px] text-xl mc-float"
+            className="min-h-[140px] rounded-[28px] text-xl mc-float"
             onClick={() => {
               setLastUsedDuration(selectedDuration);
               router.push(`/rest?duration=${selectedDuration}`);

@@ -20,6 +20,17 @@ const SAVE_DELAY_MS = 2000;
 const NOTE_DEBOUNCE_MS = 500;
 const STORAGE_KEY = "mongcount.rest-review.last";
 
+const ACTIVITY_TAGS = [
+  { id: "sitting", label: "앉아서" },
+  { id: "walking", label: "산책하며" },
+  { id: "lying", label: "누워서" },
+  { id: "standing", label: "서서" },
+  { id: "gazing", label: "멍하게" },
+  { id: "breathing", label: "호흡하며" },
+  { id: "stretching", label: "스트레칭" },
+  { id: "eyes_closed", label: "눈감고" },
+] as const;
+
 interface RestReviewScreenProps {
   fromAbort?: boolean;
   sessionId?: string;
@@ -61,9 +72,19 @@ export function RestReviewScreen({
   const noteDebounceRef = useRef<number | null>(null);
 
   const [clarity, setClarity] = useState(fromAbort ? ABORTED_CLARITY : DEFAULT_CLARITY);
+  const [selectedActivities, setSelectedActivities] = useState<Set<string>>(new Set());
   const [note, setNote] = useState(() => loadRestReviewNoteDraft(sessionId));
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
+
+  function toggleActivity(id: string) {
+    setSelectedActivities((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   const emoji = useMemo(() => {
     const emojis = ["☁︎", "☁︎☁︎", "☁︎☀︎", "☀︎☀︎", "☀︎☀︎☀︎"] as const;
@@ -111,7 +132,10 @@ export function RestReviewScreen({
     }
 
     const trimmedNote = note.trim();
-    const persistedNote = trimmedNote ? trimmedNote : null;
+    const activityPrefix = selectedActivities.size > 0
+      ? `[${ACTIVITY_TAGS.filter((t) => selectedActivities.has(t.id)).map((t) => t.label).join(", ")}] `
+      : "";
+    const persistedNote = (activityPrefix + trimmedNote).trim() || null;
 
     setIsSaving(true);
     setShowSavedToast(true);
@@ -231,6 +255,26 @@ export function RestReviewScreen({
               <span data-testid="rest-review-clarity-value">{clarity}/5</span>
               <span>맑은</span>
             </div>
+          </div>
+        </section>
+
+        <section className="space-y-3 rounded-[24px] border bg-surface p-5 shadow-sm">
+          <p className="text-sm font-medium">어떻게 쉬었나요?</p>
+          <div className="flex flex-wrap gap-2">
+            {ACTIVITY_TAGS.map((tag) => (
+              <button
+                key={tag.id}
+                type="button"
+                onClick={() => toggleActivity(tag.id)}
+                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                  selectedActivities.has(tag.id)
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border bg-background text-muted hover:text-foreground"
+                }`}
+              >
+                {tag.label}
+              </button>
+            ))}
           </div>
         </section>
 

@@ -208,6 +208,22 @@ function InlineLabelInput({ value, onSave }: { value: string; onSave: (v: string
   );
 }
 
+function InlineDurationSelect({ value, onSave }: { value: number; onSave: (v: number) => void }) {
+  const options = [1, 2, 3, 5, 7, 10, 15, 20];
+  return (
+    <select
+      value={value}
+      onChange={(e) => onSave(Number(e.currentTarget.value))}
+      className="rounded-lg border border-border bg-transparent px-2 py-1 text-sm tabular-nums text-foreground"
+      aria-label="쉬는 시간"
+    >
+      {options.map((d) => (
+        <option key={d} value={d}>{d}분</option>
+      ))}
+    </select>
+  );
+}
+
 function DeleteConfirmRow({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
   return (
     <div className="flex items-center gap-2 text-sm">
@@ -268,7 +284,7 @@ export function NotificationSlotToggles({
 
     const configMap: SlotConfigMap = {};
     for (const entry of newEntries) {
-      configMap[entry.key] = { id: entry.id, time: entry.time, label: entry.label };
+      configMap[entry.key] = { id: entry.id, time: entry.time, label: entry.label, duration: entry.duration };
     }
 
     await service.saveLocalFirst(resolvedUserId, {
@@ -328,7 +344,17 @@ export function NotificationSlotToggles({
       const next = [...prev];
       const old = next[index];
       next[index] = { ...old, label: newLabel };
-      void persistSlotConfig(old.key, { id: old.id, time: old.time, label: newLabel });
+      void persistSlotConfig(old.key, { id: old.id, time: old.time, label: newLabel, duration: old.duration });
+      return next;
+    });
+  }, [persistSlotConfig]);
+
+  const handleDurationChange = useCallback((index: number, newDuration: number) => {
+    setEntries((prev) => {
+      const next = [...prev];
+      const old = next[index];
+      next[index] = { ...old, duration: newDuration };
+      void persistSlotConfig(old.key, { id: old.id, time: old.time, label: old.label, duration: newDuration });
       return next;
     });
   }, [persistSlotConfig]);
@@ -340,7 +366,7 @@ export function NotificationSlotToggles({
     const time = findNextAvailableTime(existingTimes);
     const id = generateId();
 
-    const newEntry: SlotEntry = { key: id, id, time, label: "새 알림" };
+    const newEntry: SlotEntry = { key: id, id, time, label: "새 알림", duration: 3 };
 
     setEntries((prev) => [...prev, newEntry]);
     setSlotStates((prev) => ({ ...prev, [time]: true }));
@@ -394,10 +420,16 @@ export function NotificationSlotToggles({
         return (
           <div key={entry.key} className="flex items-center justify-between gap-3 py-1">
             <div className="flex flex-1 min-w-0 flex-col gap-0.5 items-start">
-              <InlineTimeInput
-                value={entry.time}
-                onSave={(v) => handleTimeChange(i, v)}
-              />
+              <div className="flex items-center gap-2">
+                <InlineTimeInput
+                  value={entry.time}
+                  onSave={(v) => handleTimeChange(i, v)}
+                />
+                <InlineDurationSelect
+                  value={entry.duration ?? 3}
+                  onSave={(v) => handleDurationChange(i, v)}
+                />
+              </div>
               <InlineLabelInput
                 value={entry.label}
                 onSave={(v) => handleLabelChange(i, v)}

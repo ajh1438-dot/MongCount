@@ -36,6 +36,7 @@ export interface NotificationSlotConfig {
   id: string;
   time: string;
   label: string;
+  duration?: number;
 }
 
 export interface UserPreferencesRow {
