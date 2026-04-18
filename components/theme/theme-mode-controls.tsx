@@ -12,7 +12,7 @@ import {
 } from "@/stores/theme-store";
 
 const OPTIONS: { value: ThemePreference; label: string }[] = [
-  { value: "system", label: "시스템" },
+  { value: "system", label: "포레스트" },
   { value: "light", label: "라이트" },
   { value: "dark", label: "다크" },
 ];

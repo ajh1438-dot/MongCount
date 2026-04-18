@@ -113,7 +113,7 @@ export default async function SettingsPage({
         </InfoCard>
 
         <InfoCard title="기타">
-          <div className="space-y-3 text-sm">
+          <div className="flex flex-col gap-1 text-sm">
             <a href="mailto:feedback@mongcount.app" className="inline-flex min-h-11 items-center underline underline-offset-4">
               피드백 보내기
             </a>

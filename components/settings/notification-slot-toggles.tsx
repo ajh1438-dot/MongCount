@@ -117,6 +117,14 @@ function ToggleSwitch({ checked, onChange, ariaLabel }: { checked: boolean; onCh
   );
 }
 
+function formatTimeWithPeriod(time: string) {
+  const [hourStr, minuteStr] = time.split(":");
+  const hour = parseInt(hourStr, 10);
+  const period = hour < 12 ? "오전" : "오후";
+  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  return `${period} ${String(displayHour).padStart(2, "0")}:${minuteStr}`;
+}
+
 function InlineTimeInput({ value, onSave }: { value: string; onSave: (v: string) => void }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -152,7 +160,7 @@ function InlineTimeInput({ value, onSave }: { value: string; onSave: (v: string)
       className="cursor-pointer rounded px-1 py-0.5 text-base font-semibold tabular-nums transition-colors hover:bg-muted/20"
       title="시간 편집"
     >
-      {value}
+      {formatTimeWithPeriod(value)}
     </button>
   );
 }
@@ -203,7 +211,7 @@ function InlineLabelInput({ value, onSave }: { value: string; onSave: (v: string
 function DeleteConfirmRow({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span className="text-muted">이 알림을 삭제할까요?</span>
+      <span className="text-foreground">이 알림을 삭제할까요?</span>
       <button type="button" onClick={onConfirm} className="text-red-500 hover:text-red-600 font-medium">삭제</button>
       <button type="button" onClick={onCancel} className="text-muted hover:text-foreground">취소</button>
     </div>

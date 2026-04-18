@@ -33,7 +33,7 @@ function ProgressDots({ count, target }: { count: number; target: number }) {
       {Array.from({ length: target }, (_, i) => (
         <span
           key={i}
-          className={`inline-block text-sm leading-none ${i < capped ? "text-foreground" : "text-muted/40"}`}
+          className={`inline-block text-base leading-none ${i < capped ? "text-foreground" : "text-muted/40"}`}
         >
           ☀︎
         </span>
@@ -170,7 +170,7 @@ export function S1HomeScreen({
           variant="primaryLarge"
           fullWidth
           aria-label="지금 쉼 시작하기"
-          className="min-h-40 rounded-[32px] text-xl"
+          className="min-h-32 rounded-[32px] text-xl"
           onClick={() => {
             setLastUsedDuration(effectiveStartDuration);
             router.push(`/rest?duration=${effectiveStartDuration}`);
@@ -182,7 +182,7 @@ export function S1HomeScreen({
 
       {lastSession ? (
         <p className="pb-1 text-center text-sm text-muted">
-          마지막 쉼: {lastSession.relativeTime} · <ProgressDots count={lastSession.clarityCount} target={5} />
+          마지막 쉼: {lastSession.relativeTime}
         </p>
       ) : null}
     </section>
