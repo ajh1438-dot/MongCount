@@ -393,7 +393,7 @@ export function NotificationSlotToggles({
 
         return (
           <div key={entry.key} className="flex items-center justify-between gap-3 py-1">
-            <div className="flex min-w-0 flex-col gap-0.5">
+            <div className="flex flex-1 min-w-0 flex-col gap-0.5 items-start">
               <InlineTimeInput
                 value={entry.time}
                 onSave={(v) => handleTimeChange(i, v)}

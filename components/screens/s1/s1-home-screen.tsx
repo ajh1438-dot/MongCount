@@ -11,6 +11,7 @@ import { setLastUsedDuration, type DurationPreset } from "@/stores/s1-home-store
 type NotificationLike = { permission: NotificationPermission };
 
 const DURATION_OPTIONS: DurationPreset[] = [3, 5, 10];
+const ALL_DURATIONS = [1, 2, 3, 5, 7, 10, 15, 20] as const;
 
 export interface S1HomeScreenProps {
   displayName?: string | null;
@@ -129,7 +130,7 @@ export function S1HomeScreen({
         </Banner>
       ) : null}
 
-      <header className="space-y-3 animate-fade-in">
+      <header className="space-y-3 mc-fade-in">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.2em] text-muted">쉼일지</p>
@@ -154,7 +155,7 @@ export function S1HomeScreen({
       <div className="flex flex-1 flex-col justify-center gap-5">
         <article
           aria-label={`오늘 ${effectiveCount}회 완료, ${targetCount}회 목표`}
-          className="rounded-[28px] border bg-surface px-6 py-5 shadow-sm animate-fade-in-delay-1"
+          className="rounded-[28px] border bg-surface px-6 py-5 shadow-sm mc-fade-in-1"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1.5">
@@ -168,19 +169,24 @@ export function S1HomeScreen({
           <p className="mt-3 text-sm leading-6 text-muted">{nextSlotText}</p>
         </article>
 
-        <div className="animate-fade-in-delay-2 space-y-3">
-          <div className="flex items-center justify-center gap-2" role="radiogroup" aria-label="쉬는 시간 선택">
-            {DURATION_OPTIONS.map((d) => (
+        <div className="mc-fade-in-2 flex items-stretch gap-3">
+          <div
+            className="flex flex-col gap-1 overflow-y-auto rounded-[24px] border bg-surface p-2 shadow-sm"
+            role="radiogroup"
+            aria-label="쉬는 시간 선택"
+            style={{ maxHeight: "160px" }}
+          >
+            {ALL_DURATIONS.map((d) => (
               <button
                 key={d}
                 type="button"
                 role="radio"
                 aria-checked={selectedDuration === d}
-                onClick={() => setSelectedDuration(d)}
-                className={`rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                onClick={() => setSelectedDuration(d as DurationPreset)}
+                className={`shrink-0 rounded-xl px-3 py-2 text-sm font-medium tabular-nums transition-all duration-200 ${
                   selectedDuration === d
-                    ? "bg-foreground text-background shadow-sm"
-                    : "bg-surface text-muted hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted hover:bg-muted/10 hover:text-foreground"
                 }`}
               >
                 {d}분
@@ -192,7 +198,7 @@ export function S1HomeScreen({
             variant="primaryLarge"
             fullWidth
             aria-label="지금 쉼 시작하기"
-            className="min-h-24 rounded-[32px] text-xl animate-float"
+            className="min-h-[160px] rounded-[28px] text-xl mc-float"
             onClick={() => {
               setLastUsedDuration(selectedDuration);
               router.push(`/rest?duration=${selectedDuration}`);
@@ -204,7 +210,7 @@ export function S1HomeScreen({
       </div>
 
       {lastSession ? (
-        <p className="pb-1 text-center text-sm text-muted animate-fade-in-delay-3">
+        <p className="pb-1 text-center text-sm text-muted mc-fade-in-3">
           마지막 쉼: {lastSession.relativeTime}
         </p>
       ) : null}
